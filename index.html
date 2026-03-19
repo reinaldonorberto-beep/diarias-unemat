@@ -579,36 +579,90 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
      TAB: ORÇAMENTO
 ══════════════════════════════════════ -->
 <div id="tab-orcamento" class="tab">
-  <div class="g2">
-    <div class="card">
-      <div class="ch">Campus — PTA 2026</div>
-      <table class="ot azul" id="ot-campus"></table>
+
+  <div class="sec-tabs" style="margin-bottom:20px">
+    <button class="stab on" onclick="showOrcSec('visao')">📊 Visão Geral</button>
+    <button class="stab"    onclick="showOrcSec('editar')">✏️ Editar Previsão</button>
+  </div>
+
+  <!-- VISÃO GERAL -->
+  <div id="orc-visao">
+    <div class="g2">
+      <div class="card">
+        <div class="ch">Campus — PTA 2026</div>
+        <table class="ot azul" id="ot-campus"></table>
+      </div>
+      <div class="card">
+        <div class="ch vd">Pós-Graduação — PAOE 2211</div>
+        <table class="ot verd" id="ot-posgrad"></table>
+      </div>
     </div>
-    <div class="card">
-      <div class="ch vd">Pós-Graduação — PAOE 2211</div>
-      <table class="ot verd" id="ot-posgrad"></table>
+    <div class="g2" style="margin-top:18px">
+      <div class="card">
+        <div class="ch">Campus — Previsto vs Executado</div>
+        <div class="chart-box" style="height:260px"><canvas id="ch-orc-camp"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ch vd">Pós-Graduação — Previsto vs Executado</div>
+        <div class="chart-box" style="height:260px"><canvas id="ch-orc-pos"></canvas></div>
+      </div>
+    </div>
+    <div class="g2" style="margin-top:18px">
+      <div class="card">
+        <div class="ch">Evolução Mensal — Campus</div>
+        <div id="ot-mes-c"></div>
+      </div>
+      <div class="card">
+        <div class="ch vd">Evolução Mensal — Pós-Graduação</div>
+        <div id="ot-mes-p"></div>
+      </div>
     </div>
   </div>
-  <div class="g2">
-    <div class="card">
-      <div class="ch">Evolução Mensal — Campus</div>
-      <div id="ot-mes-c"></div>
+
+  <!-- EDITAR PREVISÃO -->
+  <div id="orc-editar" style="display:none">
+    <div class="g2">
+
+      <div class="card">
+        <div class="ch" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Campus — Previsão (PTA 2026)</span>
+          <button class="btn bp" style="padding:5px 14px;font-size:12px" onclick="saveOrcForm('campus')">💾 Salvar</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr>
+            <th style="padding:8px 10px;background:var(--azul-p);color:var(--azul);text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-family:'Syne',sans-serif">Setor</th>
+            <th style="padding:8px 10px;background:var(--azul-p);color:var(--azul);text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-family:'Syne',sans-serif">Previsto (R$)</th>
+            <th style="padding:8px 10px;background:var(--azul-p);color:var(--azul);text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-family:'Syne',sans-serif">Executado</th>
+            <th style="padding:8px 10px;background:var(--azul-p);color:var(--azul);text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-family:'Syne',sans-serif">Saldo</th>
+          </tr></thead>
+          <tbody id="orc-tbody-campus"></tbody>
+          <tfoot id="orc-tfoot-campus"></tfoot>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="ch vd" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Pós-Graduação — Previsão (PAOE 2211)</span>
+          <button class="btn bg" style="padding:5px 14px;font-size:12px" onclick="saveOrcForm('posgrad')">💾 Salvar</button>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr>
+            <th style="padding:8px 10px;background:var(--verde-p);color:var(--verde);text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-family:'Syne',sans-serif">Programa</th>
+            <th style="padding:8px 10px;background:var(--verde-p);color:var(--verde);text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-family:'Syne',sans-serif">Previsto (R$)</th>
+            <th style="padding:8px 10px;background:var(--verde-p);color:var(--verde);text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-family:'Syne',sans-serif">Executado</th>
+            <th style="padding:8px 10px;background:var(--verde-p);color:var(--verde);text-align:right;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-family:'Syne',sans-serif">Saldo</th>
+          </tr></thead>
+          <tbody id="orc-tbody-posgrad"></tbody>
+          <tfoot id="orc-tfoot-posgrad"></tfoot>
+        </table>
+      </div>
+
     </div>
-    <div class="card">
-      <div class="ch vd">Evolução Mensal — Pós-Graduação</div>
-      <div id="ot-mes-p"></div>
+    <div style="margin-top:14px;padding:12px 16px;background:var(--azul-p);border-radius:10px;font-size:12.5px;color:var(--azul-m);line-height:1.6">
+      ℹ️ <strong>Como funciona:</strong> Digite o valor previsto para cada setor. O <strong>Executado</strong> é calculado automaticamente dos lançamentos (cancelados excluídos). O <strong>Saldo</strong> = Previsto − Executado, atualizado em tempo real. Clique em <strong>💾 Salvar</strong> para confirmar e atualizar os gráficos.
     </div>
   </div>
-  <div class="g2" style="margin-top:20px">
-    <div class="card">
-      <div class="ch">Orçamento Campus — Previsto vs Executado</div>
-      <div class="chart-box" style="height:240px"><canvas id="ch-orc-camp"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="ch vd">Orçamento Pós-Grad — Previsto vs Executado</div>
-      <div class="chart-box" style="height:240px"><canvas id="ch-orc-pos"></canvas></div>
-    </div>
-  </div>
+
 </div>
 
 </div><!-- /wrap -->
@@ -652,28 +706,65 @@ const DADOS_CAMPUS_INIT  =
 const DADOS_POS_INIT =
 [{"os":"316257","mes":"MAR","viajante":"Leandro de Jesus Cafe","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Conduzir o professor Albano Dalla Pria ao Campus de Cáceres. O professor vai ministrar a disciplina Semântica e Operações Enunciativas no Programa de Pós-graduação em Linguística, vinculado à FACEL/Campus de Cáceres, das 08h às 12h e das 14 às 18 h, ","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"CANCELADA","obs":"14032025"},{"os":"316261","mes":"MAR","viajante":"ALBANO DALLA PRIA","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"O professor Albano Dalla Pria vai ministrar a disciplina Semântica e Operações Enunciativas no Programa de Pós-graduação em Linguística, vinculado à FACEL/Campus de Cáceres, das 08h às 12h e das 14 às 18 h, no período de 18 a 22 de março de 2025.","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"CANCELADA","obs":"14032025"},{"os":"316975","mes":"MAR","viajante":"MANOEL GOMES DA LUZ","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar os professores Rosane Duarte Rosa Seluchinesk, Ângela Rita Christofolo de Melo, Vilmar Alves Pereira e Jairo Luiz Fleck, na Rodoviária de Cuiabá. OFÍCIO Nº 01910/2025/CAC-DURA/UNEMAT","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"17032025\n262010013250000807\n26201.0013.25.000436-0\n26201.0013.25.000368-4"},{"os":"317497","mes":"MAR","viajante":"ADRIANO LUIZ DA SILVA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Buscar o professor JOÃO DOS SANTOS VILA DA SILVA, no aeroporto Marechal Rondon, que ministrará a disciplina de Geotecnologias aplicadas a análise ambiental do Programa de Pós-Graduação em Geografia. UNEMAT-DIC-2025/12326","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"18032025\n262010013250000866\n26201.0013.25.000442-5\n26201.0013.25.000374-9"},{"os":"317964","mes":"MAR","viajante":"PAULO CESAR TAFARELLO","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Viagem a Cáceres para ministrar a disciplina \"Tópicos em Análise do Discurso II\" junto ao Programa de Pós graduação em Linguística da UNEMAT - Cáceres","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"18032025\n262010013250001048\n 26201.0013.25.000472-7\n26201.0013.25.000396-1"},{"os":"317965","mes":"MAR","viajante":"Leandro de Jesus Cafe","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Viagem a Cáceres para ministrar a disciplina \"Tópicos em Análise do Discurso II\" junto ao Programa de Pós graduação em Linguística da UNEMAT - Cáceres","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"18032025\n262010013250001031\n26201.0013.25.000471-9\n26201.0013.25.000390-0"},{"os":"318214","mes":"MAR","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar as alunas vinculadas ao PPGCA do programa Move La America, vindas da Colômbia, no aeroporto Marechal Rondon. OFÍCIO Nº 02076/2025/CAC-DURA/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"19032025\n262010013250000971\n26201.0013.25.000455-7\n26201.0013.25.000385-4"},{"os":"318285","mes":"MAR","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar os professores Alceu Zoia e Vilmar Alves Pereira, até Cuiabá, que participaram do encontro de docentes do Programa, da aula inaugural e também ministraram aula na pós-graduação. OFÍCIO Nº 01778/2025/CAC-DURA/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"19032025\n262010013250000998\n 26201.0013.25.000457-3\n26201.0013.25.000387-0"},{"os":"318318","mes":"MAR","viajante":"ADRIANO LUIZ DA SILVA","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Buscar os professores Carlos Edinei de Oliveira (vice-coordenador do ProfHistória) e Marcelo de Souza Magalhães (coordenador nacional do ProfHistória) que virão a Cáceres para participar da Programação do Evento: O ProfHistória no Âmbito da História ","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"19032025\n262010013250001005\n26201.0013.25.000459-1\n26201.0013.25.000388-9"},{"os":"319650","mes":"MAR","viajante":"MANOEL GOMES DA LUZ","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Buscar a professora Ilka de Oliveira Mota, da Universidade Federal de São Carlos, no Aeroporto de Cuiabá, que ministrará aulas na Pós-graduação em Linguística – PPG-UNEMAT. OFÍCIO Nº 02221/2025/CAC-DURA/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"21032025\n 262010013250001056\n26201.0013.25.000473-5\n26201.0013.25.000397-8"},{"os":"319696","mes":"MAR","viajante":"Ilka de Oliveira Mota","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"A Profª Drª  Ilka de Oliveira Mota da Universidade Federal de São Carlos, docente externa colaboradora  no PPG em Linguística - UNEMAT estará ministrando a disciplina PPGL.TAD.10 - TÓPICOS EM ANÁLISE DE DISCURSO (PÓS-GRADUAÇÃO) no Campus Universitári","valor":3776.5,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"21032025\n 262010013250001064\n 26201.0013.25.000474-3\n26201.0013.25.000398-6"},{"os":"320258","mes":"MAR","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Conduzir Discentes da disciplina de Geotecnologias na análise e planejamento ambiental ministrada pelo Prof. Dr. João dos Santos Vila da Silva, até os municípios de Lambari D’ Oeste – Vila Progresso – Reserva do Cabaçal – Araputanga –Mirassol D’Oeste","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"24032025\n262010013250001099\n26201.0013.25.000528-6\n26201.0013.25.000451-6"},{"os":"320389","mes":"MAR","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Levar os professores João dos Santos Vila da Silva e Ilka de Oliveira Mota, até o aeroporto Marechal rondon. OFÍCIO Nº 01968/2025/CAC-DURA/UNEMAT - OFÍCIO Nº 02221/2025/CAC-DURA/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"24032025\n262010013250001137\n26201.0013.25.000532-4\n26201.0013.25.000455-9"},{"os":"320527","mes":"MAR","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Levar os professores Marcelo de Souza Magalhães, até o aeroporto Marechal Rondon, e Carlos Edinei De Oliveira, até Cuiabá. OFÍCIO Nº 02098/2025/CAC-RH/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"24032025\n262010013250001171\n26201.0013.25.000537-5\n26201.0013.25.000459-1"},{"os":"322585","mes":"MAR","viajante":"JOSE MUNIZ DA SILVA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Conduzir o Professor Dr. Vinicius Modolo Teixeira que ministrará aulas no Programa de Pós-Graduação em Geografia, estará também mais 7 discentes no veículo. OFÍCIO Nº 02288/2025/CAC-FACH/UNEMAT","valor":1663.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"27032025\n262010013250001196\n26201.0013.25.000576-6\n26201.0013.25.000494-1"},{"os":"325141","mes":"ABR","viajante":"ADRIANO LUIZ DA SILVA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar a professora Ângela Rita Christofolo de Mello, em Cuiabá, que ministrará aulas do Mestrado e Doutorado do Programa de Pós-graduação Stricto Sensu em Educação na UNEMAT. OFÍCIO Nº 02430/2025/CAC-DURA/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"02042025\n262010013250001293\n26201.0013.25.000653-3\n26201.0013.25.000567-9"},{"os":"326183","mes":"ABR","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Conduzir alunos da disciplina Agricultura familiar e as dinâmicas socioterritoriais no Mato Grosso, ministrada pelo Prof. Dr. José Roberto Rambo, até a zona rural de Porto Estrela, para realizarem atividades de campo. OFÍCIO Nº 02417/2025/CAC-DURA/UN","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"04042025\n262010013250001323\n26201.0013.25.000659-2\n26201.0013.25.000570-9"},{"os":"328012","mes":"ABR","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar o professor José Roberto Rambo, em Tangará da Serra, que ministrou as aulas presenciais de Agricultura familiar e as dinâmicas socioterritoriais no Mato Grosso no Programa de Pós-Graduação em Geografia. OFÍCIO Nº 02412/2025/CAC-DURA/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"10042025\n262010013250001463\n26201.0013.25.000690-8\n26201.0013.25.000600-4"},{"os":"328257","mes":"ABR","viajante":"MANOEL GOMES DA LUZ","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Levar a professora Maira Luiza Spanholi, até Sinop, que acompanhou atividades na Estação Ecológica de Taiamã referente a pesquisa de doutorado -PPGCA (LIPAN) da Unemat. OFÍCIO Nº 02408/2025/CAC-DURA/UNEMAT","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"11042025\n262010013250001471\n26201.0013.25.000691-6\n 26201.0013.25.000602-0"},{"os":"328265","mes":"ABR","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar a professora Ângela Rita Christofolo de Mello que ministrou aulas do Mestrado e Doutorado do Programa de Pós-graduação Stricto Sensu em Educação na UNEMAT, Campus de Cáceres – MT, também irá no veículo a doutoranda Eliane Maria de Jesus. OFÍCIO","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"11042025\n262010013250001481\n26201.0013.25.000692-4\n26201.0013.25.000603-9"},{"os":"328314","mes":"ABR","viajante":"LINDSON MANRIQUE ROCHA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Levar o Professor Ricardo Gomes, até o aeroporto Marechal Rondon, que acompanhou as atividades para produzir um documentário que inclui as atividades de pesquisa da Unemat. OFÍCIO Nº 02246/2025/CAC-DURA/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"11042025\n262010013250001501\n 26201.0013.25.000694-0\n26201.0013.25.000605-5"},{"os":"329676","mes":"ABR","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir alunos da disciplina Meio ambiente e Sustentabilidade com alunos do mestrado e doutorado do PPGCA, sob orientação dos professores SOLANGE KIMIE IKEDA CASTRILLON, CAROLINA JOANA DA SILVA, JOSUÉ NUNES DA SILVA RIBEIRO e CARLOS EDUARDO YOUNG, p","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"15042025\n262010013250001633\n26201.0013.25.000715-7\n26201.0013.25.000620-9"},{"os":"329630","mes":"ABR","viajante":"ADRIANO LUIZ DA SILVA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir alunos da disciplina Meio ambiente e Sustentabilidade com alunos do mestrado e doutorado do PPGCA, sob orientação dos professores SOLANGE KIMIE IKEDA CASTRILLON, CAROLINA JOANA DA SILVA, JOSUÉ NUNES DA SILVA RIBEIRO e CARLOS EDUARDO YOUNG, p","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"15042025\n262010013250001617\n26201.0013.25.000713-0\n26201.0013.25.000618-7"},{"os":"329627","mes":"ABR","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir alunos da disciplina Meio ambiente e Sustentabilidade com alunos do mestrado e doutorado do PPGCA, sob orientação dos professores SOLANGE KIMIE IKEDA CASTRILLON, CAROLINA JOANA DA SILVA, JOSUÉ NUNES DA SILVA RIBEIRO e CARLOS EDUARDO YOUNG, p","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"15042025\n262010013250001609\n26201.0013.25.000712-2\n26201.0013.25.000617-9"},{"os":"329773","mes":"ABR","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar o professor Carlos Eduardo Frickmann Young, em Mirassol D’oeste e levá-lo até o aeroporto Marechal Rondon. OFÍCIO Nº 02247/2025/CAC-DURA/UNEMAT","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"15042025\n262010013250001641\n26201.0013.25.000716-5\n26201.0013.25.000621-7"},{"os":"330509","mes":"ABR","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Conduzir atletas da atlética Fênix, Profana e Vulkanica para participação na Copa Tormenta na UFMT, no retorno pegar os professores Marilda de Oliveira Costa, em Cuiabá e Flávio Bezerra de Barros no Aeroporto Marechal Rondon. UNEMAT-CAP-2025/19768 - ","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"17042025\n262010013250001722\n26201.0013.25.000732-7\n26201.0013.25.000633-0"},{"os":"330528","mes":"ABR","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Levar o professor Flávio Bezerra de Barros, até Porto Estrela, para a realização de visitas às comunidades tradicionais. OFÍCIO Nº 02962/2025/CAC-FACAB/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"17042025\n262010013250001730\n26201.0013.25.000733-5\n26201.0013.25.000634-9"},{"os":"330531","mes":"ABR","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar o professor Flávio Bezerra de Barros, em Porto Estrela, que realizou visitas às comunidades tradicionais. OFÍCIO Nº 02962/2025/CAC-FACAB/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"17042025\n262010013250001749\n 26201.0013.25.000734-3\n26201.0013.25.000635-7"},{"os":"331434","mes":"ABR","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar o professor Sandro Benedito Sguarezi, em Tangará da Serra, que ministrou aula no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres. OFÍCIO Nº 03081/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"23042025\n262010013250001862\n26201.0013.25.000748-3\n26201.0013.25.000648-9"},{"os":"331506","mes":"ABR","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Levar o professor Flávio Bezerra de Barros, que estava desenvolvendo atividades do Programa de Pós-graduação em ciências Ambientais – PPGCA, até o aeroporto Marechal Rondon. OFÍCIO Nº 02962/2025/CAC-FACAB/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"23042025\n262010013250001838\n26201.0013.25.000745-9\n26201.0013.25.000645-4"},{"os":"331497","mes":"ABR","viajante":"VALERIA FARIA CARDOSO","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Ministrar disciplina de MORFOLOGIA no Programa de Pós-Graduação em Línguística (PPGL/UNEMAT - Cáceres), de 05 a 09 de maio de 2025.","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"23042025\n262010013250002079\n26201.0013.25.000962-1\n26201.0013.25.000805-8"},{"os":"326290","mes":"ABR","viajante":"FLAVIO ROBERTO GOMES BENITES","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Ministrar a disciplina Teorias Linguísticas no curso de Pós-graduação em Linguística conforme o calendário aprovado pelo Colegiado de curso do programa.","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"04042025\n262010013250002095\n26201.0013.25.000964-8\n26201.0013.25.000807-4"},{"os":"333202","mes":"ABR","viajante":"MARIO LUCIANO DE LIMA","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Conduzir a Profa. Dra. Valéria Faria Cardoso ao Campus da Unemat em Cáceres a fim de ministrar disciplina de Morfologia junto ao Programa de Pós-Graduação Stricto Sensu em Linguística (PPGL).","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"28042025\n262010013250002109\n26201.0013.25.000965-6\n26201.0013.25.000808-2"},{"os":"333394","mes":"ABR","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar o professor Vilmar Alves Pereira, no aeroporto Marechal Rondon, que ministrará aula no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres –MT. OFÍCIO Nº 03280/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"28042025\n262010013250001978\n26201.0013.25.000951-6\n26201.0013.25.000795-7"},{"os":"333854","mes":"ABR","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar os professores Alceu Zoia, Eliane Maria de Jesus e Joice Ribeiro da Silva, ára participarem de atividades no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres.  OFÍCIO Nº 03281/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"29042025\n262010013250002011\n26201.0013.25.000954-0\n26201.0013.25.000798-1"},{"os":"335300","mes":"MAI","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir alunos para realização de Visita técnica à Associação do Centro de Tecnologia Alternativa CTA Curso de Metodologias qualitativas, na cidade de Pontes e Lacerda, sob responsabilidade do professor Wilkinson Lopes Lázaro. UNEMAT-CAP-2025/22884","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"05052025\n262010013250002192\n26201.0013.25.000986-9\n26201.0013.25.000849-1"},{"os":"336197","mes":"MAI","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar os professores Alceu Zoia, Eliane Maria de Jesus e Joice Ribeiro da Silva, ára participarem de atividades no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres.  OFÍCIO Nº 03281/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"07052025\n262010013250002222\n26201.0013.25.000989-3\n26201.0013.25.000852-1"},{"os":"336323","mes":"MAI","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar o professor Alceu Zoia e a discente Joice Ribeiro da Silva, até a Rodoviária de Cuuiabá, e no retorno trazer os professores Cesar David Mendo e Bruno Luiz de Arruda Lindote, do Aeroporto Marechal Rondon. OFÍCIO Nº 03281/2025/CAC-PPGEDU/UNEMAT -","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"07052025\n262010013250002230\n26201.0013.25.000990-7\n26201.0013.25.000853-8"},{"os":"336350","mes":"MAI","viajante":"MIGUEL CARDOSO DOS SANTOS","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Conduzir o professor Flávio Roberto Gomes Benites para ministrar aulas no Programa de Pós-graduação em Linguística no Campus de Cáceres-MT. Dar apoio logístico ao servidor no período de 18 a 21/05/2025.","valor":1058.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"07052025\n262010013250002321\n26201.0013.25.001019-0\n26201.0013.25.000866-1"},{"os":"336368","mes":"MAI","viajante":"ROSINEI RIBEIRO DO NASCIMENTO","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Buscar o professor Flávio Roberto Gomes Benites, ministrante de aulas no Programa de Pós-graduação em Linguística no Campus de Cáceres-MT. Dar apoio logístico ao servidor no período de 21 a 24/05/2025. No dia 24/05/2025, conduzí-lo à Tangará da Serra","valor":1058.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"07052025\n262010013250002338\n26201.0013.25.001020-4\n26201.0013.25.000867-8"},{"os":"335832","mes":"MAI","viajante":"CARLOS EDINEI DE OLIVEIRA","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Participação e organização do evento Jovens Pesquisadores do Centro - Oeste, Nordeste e Norte do Brasil e da América Latina - Jopeqal 2025 e Reunião com integrantes da Reconal - Edu.","valor":2614.5,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"06052025\n262010013250002370\n26201.0013.25.001045-1\n26201.0013.25.000921-6"},{"os":"338184","mes":"MAI","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir a professora Rosilainy Surubi Fernandes, e os alunos Leticia Cunha Olivi, Tatiane Amorim de Matos e Luan Marcelo Gonçalves Leite, até a Comunidade Bororo Córrego Grande –Santo Antonio do Leverger, para realizarem atividades de campo. UNEMAT-","valor":756.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"09052025\n262010013250002389\n26201.0013.25.001046-8\n26201.0013.25.000922-4"},{"os":"339924","mes":"MAI","viajante":"Amintas Nazareth Rossete","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Viagem a Sinop-MT para ministrar a disciplina de Geomorfologia e Análise ambiental no Programa de Pós-Graduação de geografia da UNEMAT, câmpus de Cáceres-MT.","valor":2268.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"14052025\n262010013250002461\n26201.0013.25.001058-1\n26201.0013.25.000933-1"},{"os":"339094","mes":"MAI","viajante":"LORIEGE PESSOA BITENCOURT","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"A Coordenadora do Programa de Pós-graduação Stricto Sensu em Educação participará de uma reunião na Universidade Federal de Mato Grosso – UFMT, às 8h da manhã, do dia 26/05/2025, segunda-feira. À tarde e à noite, da mesma data participará do evento d","valor":756.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"12052025\n262010013250002516\n26201.0013.25.001070-0\n26201.0013.25.000940-2"},{"os":"340690","mes":"MAI","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar a professora Angela Rita Christofolo de Mello, em Cuiabá, que ministrará aulas no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres, e a doutoranda Eliane Maria de Jesus. OFÍCIO Nº 03704/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"15052025\n262010013250002486\n26201.0013.25.001060-3\n26201.0013.25.000935-6"},{"os":"342231","mes":"MAI","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Conduzir os professores SANDRA MARA ALVES DA SILVA NEVES, BRUNO DE SOUZA LIMA e EVALDO FERREIRA, para participarem da reunião para a organização do I Encontro das Pós-Graduações Stricto Sensu em Geografia de Mato Grosso, na UFMT em Cuiabá. OFÍCIO Nº ","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"19052025\n262010013250002583\n26201.0013.25.001081-6\n26201.0013.25.000948-8"},{"os":"342699","mes":"MAI","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Conduzir professores e alunos de Cáceres ao Campus Universitário de Sinop para participar do evento “V - Seminário De Geografia: A Geografia Posta À Prova Diante Do Atual Cenário De Transformação Das/ Nas Escalas” e da aula de campo da disciplina Geo","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"20052025\n262010013250002656\n26201.0013.25.001088-3\n26201.0013.25.000955-0"},{"os":"342885","mes":"MAI","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar os professores Ricardo Lopes Costa, Alexandra Maria Lelis Lopes Costa, no aeroporto Marechal Rondon, e Ângela Rita Christófolo de Mello em Cuiabá, no retorno trazer a acadêmica Juliana Catarina Ramos Pires. CI Nº 02911/2025/CAC-FACISA/UNEMAT - ","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"20052025\n262010013250002680\n26201.0013.25.001097-2\n26201.0013.25.000964-1"},{"os":"343162","mes":"MAI","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar a professora Loriége Pessoa Bitencourt, que participará de uma reunião na Universidade Federal de Mato Grosso – UFMT, e de uma reunião de trabalho no Escritório da Unemat em Cuiabá. OFÍCIO Nº 03792/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"21052025\n262010013250002761\n26201.0013.25.001112-1\n26201.0013.25.000981-1"},{"os":"343328","mes":"MAI","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Levar o professor Wellington Pedrosa Quintino, até o aeroporto Marechal Rondon,  as Diretoras Rinalda Bezerra Carlos e Anderluci dos Santos Zanetti à Cuiabá, e no retorno trazer a professora Loriége Pessoa Bitencourt. OFÍCIO Nº 03904/2025/CAC-PPGLD/U","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"21052025\n 262010013250002788\n26201.0013.25.001114-6\n26201.0013.25.000983-6"},{"os":"344022","mes":"MAI","viajante":"JOSE ANTONIO PEREIRA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Conduzir Alunos da disciplina PPGEDU61-Sociologia da Educação, para realização de atividades de campo nas cidades de Pontes e Lacerda -MT e Vila Bela da Santíssima Trindade, sob orientação do professor Paulo Alberto dos Santos Vieira. OFÍCIO Nº 03544","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"22052025\n262010013250002907\n26201.0013.25.001131-6\n26201.0013.25.001000-1"},{"os":"345440","mes":"MAI","viajante":"ALBANO DALLA PRIA","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"O professor Albano Dalla Pria vai ministrar a disciplina Semântica e Operações Enunciativas no Programa de Pós-graduação em Linguística, vinculado à FACEL/Campus de Cáceres, das 08h às 12h e das 14 às 18 h, no período de 10 a 14 de junho de 2025.","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"26052025\n262010013250003131\n26201.0013.25.001241-1\n26201.0013.25.001099-0"},{"os":"345442","mes":"MAI","viajante":"Leandro de Jesus Cafe","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"O motorista Leandro de Jesus Café vai conduzir o professor Albano Dalla Pria ao Campus de Cáceres. O professor vai ministrar a disciplina Semântica e Operações Enunciativas no Programa de Pós-graduação em Linguística, vinculado à FACEL/Campus de Cáce","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"26052025\n262010013250003121\n26201.0013.25.001242-8\n26201.0013.25.001100-8"},{"os":"346845","mes":"MAI","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Buscar o professor Wellington Pedrosa Quintino, no aeroporto Marechal Rondon, que participou do X Encontro de Línguas e Culturas Macro-Jê, no Rio de Janeiro-RJ. OFÍCIO Nº 03904/2025/CAC-PPGLD/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"29052025\n262010013250003040\n26201.0013.25.001220-7\n26201.0013.25.001082-6"},{"os":"347094","mes":"MAI","viajante":"MANOEL GOMES DA LUZ","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar em Cuiabá o professor Alceu Zoia, que ministrará aulas presenciais no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres – MT, também virão as discentes do doutorado do PPGEdu Joice Ribeiro da Silva, Eliane Maria de Jesus e Alessan","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"29052025\n262010013250003083\n26201.0013.25.001224-1\n26201.0013.25.001086-9"},{"os":"348282","mes":"JUN","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar o professor Alceu Zoia, até Cuiabá, que ministrou aulas presenciais no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres, também irá no veículo a discente do doutorado do PPGEdu, Eliane Maria de Jesus. OFÍCIO Nº 03869/2025/CAC-PPGE","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"02062025\n262010013250003113\n26201.0013.25.001243-6\n26201.0013.25.001101-6"},{"os":"349187","mes":"JUN","viajante":"ADRIANO LUIZ DA SILVA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar o professor Sandro Benedito Sguarezi, em Tangará da Serra, que ministrará aulas presenciais do Programa de Pós-graduação Stricto Sensu em Educação em Cáceres. OFÍCIO Nº 03744/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"04062025\n262010013250003237\n26201.0013.25.001258-4\n26201.0013.25.001114-8"},{"os":"351039","mes":"JUN","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Buscar a professora Carla Bernadete Madureira Cruz, no aeroporto Marechal Rondon, que irá ministrar aulas presenciais dno Programa de Pós-Graduação em Geografia (PPGGeo). OFÍCIO Nº 03685/2025/CAC-PPGGEO/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"09062025\n262010013250003342\n26201.0013.25.001279-7\n26201.0013.25.001131-8"},{"os":"352168","mes":"JUN","viajante":"LINDSON MANRIQUE ROCHA","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Buscar os professores EDUARDO ROBERTO JUNQUEIRA GUIMARAES e ENI DE LOURDES PUCCINELLI ORLANDI, no aeroporto Marechal Rondon, que ministrarão aulas no PPG em Linguística. OFÍCIO Nº 04773/2025/CAC-PPGLD/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"11062025\n262010013250003377\n26201.0013.25.001283-5\n26201.0013.25.001134-2"},{"os":"352206","mes":"JUN","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar o professor Vilmar Alves Pereira, em Cuiabá, que ministrará aulas presenciais no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres – MT. OFÍCIO Nº 03843/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"11062025\n262010013250003385\n26201.0013.25.001284-3\n26201.0013.25.001135-0"},{"os":"352704","mes":"JUN","viajante":"WILLIAN ABUTAKKA DE MORAES","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar o professor Vilmar Alves Pereira, até Cuiabá, que ministrou aulas presenciais no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres. OFÍCIO Nº 03843/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"CANCELADA","obs":"12062025"},{"os":"353096","mes":"JUN","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar a professora Carla Bernadete Madureira Cruz, no aeroporto Marechal Rondon, que ministrou aulas presenciais no Programa de Pós-Graduação em Geografia (PPGGeo). OFÍCIO Nº 03685/2025/CAC-PPGGEO/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"13062025\n262010013250003482\n26201.0013.25.001295-9\n26201.0013.25.001146-6"},{"os":"353086","mes":"JUN","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir a professora Rosilainy Surubi Fernandes, e os discentes e orientandos Pedro Mariano Garcia Rojas, Milena Pellini Guizelin e Rosivani Barbosa Dourado, até a Comunidade Bororo Córrego Grande –Santo Antonio do Leverger, para que desenvolvam ati","valor":1058.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"13062025\n262010013250003466\n26201.0013.25.001297-5\n26201.0013.25.001148-2"},{"os":"353654","mes":"JUN","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar o professor Vilmar Alves Pereira, até Cuiabá, que ministrou aulas presenciais no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres. OFÍCIO Nº 03843/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"16062025\n262010013250003504\n26201.0013.25.001300-9\n26201.0013.25.001150-4"},{"os":"354645","mes":"JUN","viajante":"TEODOMIRO GONCALVES SERAPIAO FILHO","setor_sol":"PPGL","setor_vinc":"PPGL","setor_atend":"PPGL","descricao":"Levar os professores EDUARDO ROBERTO JUNQUEIRA GUIMARAES e ENI DE LOURDES PUCCINELLI ORLANDI, no aeroporto Marechal Rondon, que ministraram aulas no PPG em Linguística. OFÍCIO Nº 04773/2025/CAC-PPGLD/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"17062025\n262010013250003563\n26201.0013.25.001310-6\n 26201.0013.25.001158-1"},{"os":"355231","mes":"JUN","viajante":"MANOEL GOMES DA LUZ","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Levar os professores Claumir Cesar Muniz, Wilkinson Lopes Lázaro e Ernandes Sobreira Oliveira Junior, para participarem de reunião com pesquisadores de o PPGCA e ProfAgua para atender demandas didático-pedagógicas. UNEMAT-CAP-2025/34540","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"18062025\n262010013250003628\n26201.0013.25.001317-3\n26201.0013.25.001165-2"},{"os":"355786","mes":"JUN","viajante":"LINDSON MANRIQUE ROCHA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar os professores Claumir Cesar Muniz, Wilkinson Lopes Lázaro e Ernandes Sobreira Oliveira Junior, que participaram de reunião com pesquisadores de o PPGCA e ProfAgua para atender demandas didático-pedagógicas. UNEMAT-CAP-2025/34540","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"23062025\n262010013250003652\n 26201.0013.25.001321-1\n26201.0013.25.001170-9"},{"os":"355792","mes":"JUN","viajante":"OACIR CATARINO DA SILVA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Levar as professoras Rosane Maria Andrade Vasconcelos e Carolina Roberta O. B. e Jorge da Cunha, até Cáceres, que participaram de reunião de trabalho sobre a Confecção da Proposta de APCN de Mestrado do Programa de Pós-Graduação Stricto Sensu em Cuid","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"23062025\n262010013250003660\n26201.0013.25.001322-1\n26201.0013.25.001171-7\n*Atendimento à FACIS cadastrada no SIGEV erron"},{"os":"357132","mes":"JUN","viajante":"Rita Maria de Paula Garcia","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Viagem à Cáceres para ministrar a disciplina Tópicos Especiais em Dinâmicas Espaciais no Programa de Pós-Graduação em Geografia  da UNEMAT, entre os dias 30 de junho e 3 de julho, que acontecerá na Cidade Universitária.","valor":1663.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"25062025\n262010013250003687\n26201.0013.25.001371-8\n26201.0013.25.001217-9"},{"os":"357141","mes":"JUN","viajante":"ADRIANO LUIZ DA SILVA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir estudantes do ensino médio da escola Porfiria de Paula em Várzea Grande e 5 professores, de Várzea Grande aos municípios de Barão de Melgaço e Santo Antônio do Leverger, para participação no evento Encontro da troca de saberes, sob responsab","valor":756.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"25062025\n262010013250003784\n26201.0013.25.001399-8\n26201.0013.25.001245-4"},{"os":"357364","mes":"JUN","viajante":"JOSE ANTONIO PEREIRA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar integrantes da equipe técnica, no aeroporto Marechal Rondon as 10h, que participarão da Expedição II – Travessia no Pantanal, no âmbito das atividades do Projeto PELD-DARP Pantanal. OFÍCIO Nº 05172/2025/CAC-PPGCAM/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"25062025\n262010013250003768\n26201.0013.25.001402-1\n 26201.0013.25.001248-9"},{"os":"357379","mes":"JUN","viajante":"EUGENIO LEITE DE ALMEIDA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar a professora Liliane Cristine Schlemer Alcântara, no aeroporto Marechal Rondon, que irá ministrar aulas no PPGCA. OFÍCIO Nº 04834/2025/CAC-PPGCAM/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"25062025\n262010013250003776\n26201.0013.25.001403-1\n26201.0013.25.001249-7"},{"os":"358389","mes":"JUN","viajante":"REGIANE CRISTINA CUSTODIO","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Participar da Plenária Nacional de Coordenadores do ProfHistória, que ocorrerá nos dias 12 de julho de 2025, das 9:00 às 17:00 e 13 de julho de\n2025, das 9:00 às 13:00, na Universidade Federal de Minas Gerais (UFMG), Belo Horizonte/MG.\nA Plenária Nac","valor":2033.5,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"27062025\n262010013250003903\n26201.0013.25.001569-9\n 26201.0013.25.001416-3"},{"os":"357752","mes":"JUN","viajante":"WILLIAN ABUTAKKA DE MORAES","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar integrantes da equipe técnica, na UFMT em Cuiabá e no aeroporto Marechal Rondon, que participarão da Expedição II – Travessia no Pantanal, no âmbito das atividades do Projeto PELD-DARP Pantanal. OFÍCIO Nº 05171/2025/CAC-PPGCAM/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"26062025\n262010013250003806\n26201.0013.25.001410-2\n 26201.0013.25.001254-3"},{"os":"359648","mes":"JUL","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir o professor Antonio Francisco Malheiros, e os bolsistas Lucas França de Barros e Luan Marcelo Gonçalves Leite, para realizarem coleta e pesquisa nas comunidades Guató, Ilha Insua e Passo do Lontra, em Corumbá-MS. OFÍCIO Nº 05120/2025/CAC-PPG","valor":7843.5,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"01072025\n262010013250003849\n26201.0013.25.001558-3\n26201.0013.25.001404-1"},{"os":"360151","mes":"JUL","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar as professoras Liliane Cristine Schlemer Alcântara, até o aeroporto Marechal Rondon, e  Rita Maria de Paula Garcia, até a Rodoviária de Cuaibá, ambas ministraram aulas no PPGCA e PPGGeo respectivamente. OFÍCIO Nº 04834/2025/CAC-PPGCAM/UNEMAT - ","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"02072025\n262010013250003873\n26201.0013.25.001561-3\n26201.0013.25.001407-4"},{"os":"360946","mes":"JUL","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar Pesquisadores as 7h da manhã em Porto Jofre – MT. A solicitação se deve à necessidade de desocupação do barco de apoio no horário estabelecido, garantindo o deslocamento adequado de toda a equipe, bem como o transporte dos materiais de campo e","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"03072025\n262010013250003911\n26201.0013.25.001570-2\n26201.0013.25.001417-1"},{"os":"361878","mes":"JUL","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Conduzir a docente Regiane Cristina Custódio de Figueiredo (Coordenadora do ProfHistória), conf convocação da Comissão Acadêmica Nacional/CAN, do ProfHistória,  que participará da programação do evento Plenária de Coordenadores do ProfHistória, que o","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"07072025\n262010013250003962\n26201.0013.25.001621-0\n26201.0013.25.001423-6"},{"os":"363405","mes":"JUL","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Buscar em Cuiabá, a docente Regiane Cristina C. de Figueiredo (Coordenadora do ProfHistória), conf convocação da Comissão Acadêmica Nacional/CAN, do ProfHistória,  que participou da programação do evento Plenária de Coordenadores do ProfHistória, que","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"11072025\n262010013250004020\n26201.0013.25.001633-4\n26201.0013.25.001479-1"},{"os":"367415","mes":"JUL","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Levar o professor Claumir Cesar Muniz, técnico Derick Victor de Souza Campos e a aluna Janeide Caboclo da Silva, carretinha com barco motorizado e equipamentos para coleta de amostras de peixe no rio Jauru, próximo a cidade de Jauru. OFÍCIO Nº 05795/","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"21072025\n262010013250004111\n26201.0013.25.001717-9\n26201.0013.25.001556-9"},{"os":"367418","mes":"JUL","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar o professor Claumir Cesar Muniz, técnico Derick Victor de Souza Campos e a aluna Janeide Caboclo da Silva, carretinha com barco motorizado e equipamentos que realizaram coleta de amostras de peixe no rio Jauru, próximo a cidade de Jauru. OFÍCI","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"21072025\n262010013250004128\n26201.0013.25.001718-7\n26201.0013.25.001557-7"},{"os":"367445","mes":"JUL","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Levar a equipe de pesquisadores para atividades de coleta e pesquisa sob a orientação do Prof. Dr. Manoel dos Santos Filho, na Estação Ecológica Serra das Araras. OFÍCIO Nº 05926/2025/CAC-FACAB/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"21072025\n262010013250004144\n26201.0013.25.001720-9\n26201.0013.25.001559-3"},{"os":"370465","mes":"JUL","viajante":"MANOEL GOMES DA LUZ","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar a equipe de pesquisadores para atividades de coleta e pesquisa sob a orientação do Prof. Dr. Manoel dos Santos Filho, na Estação Ecológica Serra das Araras. OFÍCIO Nº 05926/2025/CAC-FACAB/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"28072025\n262010013250004225\n26201.0013.25.001734-9\n26201.0013.25.001573-9"},{"os":"373233","mes":"AGO","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Conduzir a docente Loriége Pessoa Bitencourt que participará de uma banca de defesa de Mestrado, de um aluna do PPGECM, às 9 horas da manhã, do dia 07/08/2025 e também  de uma reunião com a coordenação do PPGECM para estreitamento de relações e ações","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"01082025\n262010013250004314\n26201.0013.25.001756-1\n26201.0013.25.001592-5"},{"os":"378846","mes":"AGO","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Conduzir  ao Aeroporto Mal. Rondon, os  professores do PPGGeo UNEMAT para participar do II ECOPOLTUR – Encontro Internacional de Economia Política do Turismo: \"Desafios e compromissos do Turismo no mundo contemporâneo\" .  Conforme OFÍCIO Nº 04682/202","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"13082025\n262010013250004438\n26201.0013.25.001824-8\n26201.0013.25.001646-8"},{"os":"379956","mes":"AGO","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir o docente Antonio Francisco Malheiros, e equipe de 14 pesquisadores, para visita às comunidades do Chumbo e Chiquitanos, onde serão realizadas coletas de dados de pesquisa orientada pelo docente, nos municípios de Poconé e Porto Esperidião, ","valor":1058.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"14082025\n262010013250004454\n26201.0013.25.001826-4\n26201.0013.25.001648-4"},{"os":"381433","mes":"AGO","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Buscar no Aeroporto Mal. Rondon, os  professores do PPGGeo UNEMAT que participaram do II ECOPOLTUR – Encontro Internacional de Economia Política do Turismo: \"Desafios e compromissos do Turismo no mundo contemporâneo\" .  Conforme OFÍCIO Nº 04682/2025/","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"18082025\n262010013250004462\n26201.0013.25.001827-2\n26201.0013.25.001649-2"},{"os":"382159","mes":"AGO","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Levar as discentes MARIANA BARRIOS ,  MIRTHA ROSARIO MORALES VARGAS,  até Cuiabá, por motivo de Viagem internacional. As discentes fazem parte do Programa Move La América, e foram recebidas pela Unemat sob a orientação da Professora Dr. Liliane Alcân","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"19082025\n262010013250004489\n26201.0013.25.001830-2\n26201.0013.25.001650-6"},{"os":"382603","mes":"AGO","viajante":"ADRIANO LUIZ DA SILVA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir a docente Maria Aparecida Piarangeli  e alunos da pós-graduação, 21  e 22/08/25, para  aula campo,  constituída   de   um   roteiro pedológico, de Cáceres - Mirassol - Reserva   do   Cabaçal - Salto   das Nuvens. OFÍCIO Nº 06531/2025/CAC-PPG","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"20082025\n262010013250004519\n 26201.0013.25.001839-6\n26201.0013.25.001659-1"},{"os":"381687","mes":"AGO","viajante":"ALCEU ZOIA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Ministrar aula da disciplina Educação, Diversidade e Interculturalidade no PPGEDU, conforme calendário aprovado  pelo colegiado do Programa","valor":1361.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"19082025\n262010013250004527\n 26201.0013.25.001836-1\n26201.0013.25.001657-3"},{"os":"382620","mes":"AGO","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Prof. Dr. Juberto Babilônia de Sousa e os discentes para atividade de campo da disciplina de Estudos de solos aplicados à análise ambiental. PPGGeo, A realização da atividade de campo terá como trajeto Cáceres - Reserva do Cabaçal OFÍCIO Nº 05751/202","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"20082025\n262010013250004535\n26201.0013.25.001837-1\n26201.0013.25.001658-1"},{"os":"384036","mes":"AGO","viajante":"LINDSON MANRIQUE ROCHA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Levar Pesquisadoras Greisiele Secundino Dantas e Ana Lívia Borges Farias à Estação Ecológica Serra das Araras (EESA), no município de Porto Estrela–MT, para execução de atividades iniciais vinculadas ao projeto de mestrado desenvolvido no Programa de","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"22082025\n262010013250004551\n26201.0013.25.001841-8\n26201.0013.25.001661-1"},{"os":"384035","mes":"AGO","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir Alunos da PPGAM, para a realização de visita técnica, como parte da disciplina Ciências Sociais e Desenvolvimento Regional, sob responsabilidade do professor Sandro Benedito Sguarezi, em Tangará da Serra – Coopertan Assoarte -Núcleo Arte da ","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"22082025\n262010013250004561\n 26201.0013.25.001842-6\n26201.0013.25.001662-1"},{"os":"384817","mes":"AGO","viajante":"ALPINIANO LOPES GALVAO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Conduzir o docente Alceu Zóia, de Cuiabá para Cáceres, que ministrará aulas no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres – MT, no período de 26 a 29 de agosto de 2025, na disciplina PPGEDU17 - Educação, Diversidade e Intercultura","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"25082025\n262010013250004608\n26201.0013.25.001846-9\n26201.0013.25.001666-2"},{"os":"385635","mes":"AGO","viajante":"ALPINIANO LOPES GALVAO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar Professoras Beleni Salete Grando e Ana Carolina de Mello para participar do I Circuito de Interculturalidade em Educação no Campus de Cáceres. No dia 27/08/2025 está previsto sua saída às 6h00min na residência em Cuiabá-MT. OFÍCIO Nº 06220/2025","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"26082025\n262010013250004624\n26201.0013.25.001877-9\n26201.0013.25.001668-9"},{"os":"385636","mes":"AGO","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Buscar Pesquisadoras Greisiele Secundino Dantas e Ana Lívia Borges Farias na Estação Ecológica Serra das Araras (EESA), no município de Porto Estrela–MT,  após a  execução de atividades iniciais vinculadas ao projeto de mestrado desenvolvido no Progr","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"26082025\n262010013250004632\n26201.0013.25.001878-7\n26201.0013.25.001669-7"},{"os":"382996","mes":"AGO","viajante":"Juberto Babilonia de Sousa","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Aula a campo com alunos da pós-graduação PPGEO. Roteiro pedológico","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"21082025\n262010013250004764\n26201.0013.25.001955-4\n26201.0013.25.001760-1"},{"os":"383465","mes":"AGO","viajante":"MARILDA DE OLIVEIRA COSTA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Participação no XIII Encontro FINEDUCA, com apresentação de trabalho resultado de pesquisa, constante na programação. Participará também de reunião de grupo de pesquisa.","valor":2614.5,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"21082025\n262010013250004640\n26201.0013.25.001925-2\n26201.0013.25.001677-8"},{"os":"383537","mes":"AGO","viajante":"JUDITE DE AZEVEDO DO CARMO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Ministrar disciplina no programa de pós-graduação em Geografia no campus da Unemat, Cáceres, no período de 26/08 a 30/08/2025. Irei de ônibus de Sinop a Cuiabá e de Cuiabá para Cáceres irei de carro oficial, da mesma forma será o trajeto de retorno.","valor":1663.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"21082025\n262010013250004659\n26201.0013.25.001926-0\n26201.0013.25.001678-6"},{"os":"385092","mes":"AGO","viajante":"AUMERI CARLOS BAMPI","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Ministrar aulas junto ao Programa de Mestrado e Doutorado em Geografia - Campus de Cáceres - MT. Disciplina: Espaço, política e dinâmica territorial","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"26082025\n262010013250004667\n26201.0013.25.001927-9\n26201.0013.25.001679-4"},{"os":"387085","mes":"AGO","viajante":"ROSANE DUARTE ROSA SELUCHINESK","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Ministrar a disciplina de Teorias da Educação no Programa de Pós-graduação em Educação a ser realizado no Campus de Cáceres-MT no período de 10 a 12 de setembro","valor":1663.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"29082025\n262010013250004748\n26201.0013.25.001949-1\n26201.0013.25.001758-8"},{"os":"386365","mes":"AGO","viajante":"ALCEU ZOIA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Ministrar a disciplina PPGEDU17 - Educação, Diversidade e Interculturalidade PPGEdu","valor":1361.25,"motivo":"PÓS GRADUAÇÃO","situacao":"CANCELADA","obs":"27082025\n262010013250004731\n26201.0013.25.001948-1\n26201.0013.25.001757-1\nGDR 000016-2"},{"os":"387067","mes":"AGO","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar para Cuiabá, as  Professoras Beleni Salete Grando e Ana Carolina de Mello que participaram do I Circuito de Interculturalidade em Educação no Campus de Cáceres ,\nLevar para a rodoviária de Cuiabá os Professores  Alceu Zoia  e  Judite Azevedo do","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"29082025\n262010013250004713\n26201.0013.25.001934-1\n26201.0013.25.001750-2"},{"os":"386963","mes":"AGO","viajante":"ANGELA RITA CHRISTOFOLO DE MELLO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Ministrar a disciplina obrigatória de 60 horas “Seminário de Pesquisa em Formação de Professores, Políticas Educacionais e Práticas Pedagógicas” no Programa de Pós-graduação em Educação, nível doutorado, no período de 22 a 26 de setembro,  totalizand","valor":2873.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"28082025\n262010013250004705\n26201.0013.25.001935-1\n26201.0013.25.001751-0"},{"os":"387151","mes":"AGO","viajante":"ROSANE DUARTE ROSA SELUCHINESK","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Ministrar a disciplina de Teorias da Educação no Programa de Pós-graduação em Educação a ser realizado no Campus de Cáceres-MT no período de 04 a 06 de dezembro.","valor":1663.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"29082025\n262010013250004756\n26201.0013.25.001950-3\n26201.0013.25.001759-6"},{"os":"390760","mes":"SET","viajante":"ADRIANO LUIZ DA SILVA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar a docente Maritza Maciel Castrillon Maldonado. Ela foi convidada para compor a Comissão de avaliadores da Avaliação Quadrienal (Quadriênio 2021/2024) da Área de Educação. Participará de reunião na CAPES, em Brasília, no período de 8 a 12 de set","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"05092025\n262010013250004799\n26201.0013.25.001958-9\n26201.0013.25.001763-4"},{"os":"391057","mes":"SET","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir  a Professora Carolina Joana da Silva e demais acompanhantes, que realizarão atividades junto a comunidades tradicionais, conforme Itinerário: IDA 6:30- 08/09/2025 - Parque Chapada do Mirante em Cuiabá  x São Pedro de Joselândia/ Barao de Me","valor":1361.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"08092025\n262010013250004829\n26201.0013.25.001963-5\n26201.0013.25.001765-0"},{"os":"393514","mes":"SET","viajante":"JOSE MUNIZ DA SILVA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Conduzir retorno Cáceres-Sinop, do Prof. Dr. Aumeri Carlos Bampi, lotado no Programa de Pós-Graduação em Geografia (PPGGeo UNEMAT), que ministrou a disciplina de Espaço, política e dinâmica territorial no período de 08 a 13/09/2025,  também os discen","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"11092025\n262010013250004926\n26201.0013.25.001976-7\n26201.0013.25.001778-2"},{"os":"391426","mes":"SET","viajante":"Matheus de Mesquita e Pontes","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"O professor Matheus de Mesquita e Pontes, IFMT/MT, cedido para o IFMT/GO, faz parte do corpo docente do Programa de Pós-graduação Profissional em Ensino de História\ne virá a Cáceres para ministrar aulas no Mestrado e realizar orientações de pesquisa ","valor":2614.5,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"08092025\n262010013250005078\n26201.0013.25.002011-0\n26201.0013.25.001793-6"},{"os":"393758","mes":"SET","viajante":"MARION MACHADO CUNHA","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"O professor Dr. Marion Machado Cunha faz parte do corpo docente do Programa de Pós-graduação Profissional em Ensino de História/PROFHISTÓRIA e virá a Cáceres\npara ministrar aulas no mestrado nos dias 02 e 03 de outubro/2025.","valor":1058.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"12092025\n 262010013250004950\n26201.0013.25.001983-1\n26201.0013.25.001781-2"},{"os":"393736","mes":"SET","viajante":"ALPINIANO LOPES GALVAO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Trazer de Cuiabá Professores e atletas do CIPEEF/UNEMAT- OFÍCIO Nº 07293/2025/CAC-FACIS/UNEMAT, no retorno Levar professores do PPGGeo UNEMAT para o Aeroporto, participar do XVI Encontro Nacional de Pós-Graduação e Pesquisa em Geografia Geografias, n","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"12092025\n262010013250004942\n26201.0013.25.001987-2\n26201.0013.25.001785-5."},{"os":"394167","mes":"SET","viajante":"MANOEL GOMES DA LUZ","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar no Aeroporto, a docente Maritza Maciel Castrillon Maldonado e Prof. Evaldo Ferreira, convidados para compor a Comissão de avaliadores da Avaliação Quadrienal (Quadriênio 2021/2024) da Área de Educação. Participaram de reunião na CAPES, em Bras","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"12092025\n 262010013250004969\n26201.0013.25.001984-8\n26201.0013.25.001782-0"},{"os":"394168","mes":"SET","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGCA","setor_vinc":"PPGCA","setor_atend":"PPGCA","descricao":"Conduzir os Pesquisadores, de Cáceres à comunidade Nova Alvorada, no município de Comodoro-MT,  A finalidade é a realização de palestras, orientações e entrega de potes coletores, parte das ações do projeto de pesquisa : \"Saúde da população habitante","valor":1058.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"12092025\n262010013250004977\n 26201.0013.25.001985-6\n 26201.0013.25.001783-9"},{"os":"394748","mes":"SET","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar ao Aeroporto, a docente Marilda de Oliveira Costa. que participará do XIII Encontro da Associação Nacional de Pesquisa em Financiamento da Educação –FINEDUCA, na Universidade de Brasília (UnB), dias 17, 18 e 19/ 2025. No retorno trazer  Profs. ","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"15092025\n262010013250004993\n26201.0013.25.001986-4\n26201.0013.25.001784-7"},{"os":"397309","mes":"SET","viajante":"LINDSON MANRIQUE ROCHA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar em Cuiabá a docente Marilda de Oliveira Costa, que participou do XIII Encontro da Associação Nacional de Pesquisa em Financiamento da Educação – FINEDUCA  parte presencial, na Universidade de Brasília (UnB), nos dias 17, 18 e 19 de setembro de","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"19092025\n262010013250005116\n26201.0013.25.002043-9\n26201.0013.25.001822-3"},{"os":"399006","mes":"SET","viajante":"WILLIAN ABUTAKKA DE MORAES","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Buscar os professores Sandra Mara Alves da Silva Neves, Bruno de Souza Lima e Renato Fonseca de Arruda, no aeroporto Marechal Rondon, que participaram do XVI Encontro Nacional de Pós-Graduação e Pesquisa em Geografia Geografias, na Universidade Feder","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"24092025\n262010013250005264\n26201.0013.25.002135-4\n26201.0013.25.001878-9"},{"os":"400016","mes":"SET","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Buscar o professor Edson Vicente da Silva, no aeroporto Marechal Rondon, para ministrar as aulas presenciais de Tópicos especiais em Análise Ambiental: Geoecologia de paisagem e planejamento ambiental no Programa de Pós-Graduação em Geografia (PPGGeo","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"26092025\n262010013250005310\n26201.0013.25.002217-2\n26201.0013.25.001930-0"},{"os":"402062","mes":"OUT","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Levar o Prof. Dr. Marion Machado Cunha, até Sinop, que ministrou aulas no ProfHistória/UNEMAT. OFÍCIO Nº 08086/2025/CAC-PROFHISTORIA/UNEMAT","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"01102025\n262010013250005442\n26201.0013.25.002236-9\n26201.0013.25.002020-1"},{"os":"403260","mes":"OUT","viajante":"MARILDA DE OLIVEIRA COSTA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Participar da 42ª Reunião Nacional & Wera Focal Meeting, de 26 a 30 de outubro de 2025, na Universidade Federal da Paraíba - UFPB – João Pessoa - PB, Brasil.\nCoordenar a SESSÃO DE APRESENTAÇÃO DE TRABALHO do GT05 - ESTADO E POLÍTICA EDUCACIONAL,  pro","valor":2614.5,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"03102025\n262010013250005531\n26201.0013.25.002254-7\n26201.0013.25.002034-1"},{"os":"405738","mes":"OUT","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PROFLetras","setor_vinc":"PROFLetras","setor_atend":"PROFLetras","descricao":"Buscar o professor Everton Almeida Barbosa, vinculado ao ProfLetras, que se deslocará até Cáceres/MT para ministrar a disciplina Leitura do Texto Literário, no PROFLETRAS. OFÍCIO Nº 08196/2025/CAC-PROFLETRAS/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"09102025\n262010013250005590\n26201.0013.25.002269-5\n26201.0013.25.002048-1"},{"os":"406128","mes":"OUT","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar o professor Edson Vicente da Silva, no Aeroporto Marechal Rondon, que ministrou  aulas presenciais de Tópicos especiais em Análise Ambiental: Geoecologia de paisagem e planejamento ambiental no Programa de Pós-Graduação em Geografia (PPGGeo). O","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"10102025\n262010013250005620\n26201.0013.25.002272-5\n26201.0013.25.002051-1"},{"os":"406917","mes":"OUT","viajante":"ALCEU REINALDO WINCK","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Levar o professor Robson Gomes de Melo, até a FAMATO em Cuiabá, e no retorno buscar o professor Matheus de Mesquita e Pontes no Aeroporto Marechal Rondon,  do ProfHistória/UNEMAT e virá a Cáceres para ministrar disciplina e orientar pesquisa de disse","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"13102025\n262010013250005681\n26201.0013.25.002287-3\n26201.0013.25.002060-0"},{"os":"407841","mes":"OUT","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PROFLetras","setor_vinc":"PROFLetras","setor_atend":"PROFLetras","descricao":"Buscar o professor Everton Almeida Barbosa, vinculado ao ProfLetras, que se deslocará entre Cuiabá e Cáceres/MT para ministrar a disciplina Leitura do Texto Literário. OFÍCIO Nº 08196/2025/CAC-PROFLETRAS/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"15102025\n262010013250005760\n26201.0013.25.002343-8\n26201.0013.25.002069-4"},{"os":"408014","mes":"OUT","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PROFLetras","setor_vinc":"PROFLetras","setor_atend":"PROFLetras","descricao":"Levar a professora Maristela Cury Sarian, professora permanente do Programa ProfLetras, até o aeroporto Marechal Rondon, que estará participando no XII SEAD - Seminário de Estudos em Análise do Discurso, promovido pela Universidade Federal de Alagoas","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"15102025\n262010013250005787\n26201.0013.25.002346-2\n26201.0013.25.002071-6"},{"os":"406684","mes":"OUT","viajante":"VINICIUS MODOLO TEIXEIRA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Ministrar Disciplina no Programa de Pós-Graduação em Geografia da UNEMAT. Disciplina: PPGGEO44 - GEOPOLÍTICA E DINÂMICA ESPACIAL: TERRITÓRIO, PODER E DESENVOLVIMENTO EM UM MUNDO EM DISPUTAS","valor":1966.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"13102025\n262010013250005809\n26201.0013.25.002348-9\n26201.0013.25.002117-8"},{"os":"409011","mes":"OUT","viajante":"EVALDO FERREIRA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Realização de trabalho de campo no trajeto entre os municípios de Cáceres e Porto Estrela.","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"17102025\n262010013250005851\n26201.0013.25.002358-6\n26201.0013.25.002123-2"},{"os":"409368","mes":"OUT","viajante":"ALCEU ZOIA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"serão ministradas no PPGEdu, campus de Cáceres-MT,  disciplina PPGEDU17 - Educação, Diversidade e Interculturalidade, no período de 05 a 07 de novembro de 2025 e que a vinda de Sinop-MT para Cáceres-MT ocorrerá no dia 04 de novembro e retorno para Si","valor":1361.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"20102025\n262010013250005884\n26201.0013.25.002385-3\n26201.0013.25.002152-6"},{"os":"410956","mes":"OUT","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar os professores Loriége Pessoa Bitencourt e Laudemir Luiz Zart, até o aeroporto Marechal Rondon, e no retorno buscar a professora Leila Nalis e alunos que participaram da etapa final de PREMIAÇÃO DE TRABALHOS CIENTÍFICOS APRESENTADOS NA 22ª SEMA","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"22102025\n262010013250005906\n26201.0013.25.002387-1\n26201.0013.25.002154-2"},{"os":"410966","mes":"OUT","viajante":"LINDSON MANRIQUE ROCHA","setor_sol":"PROFLetras","setor_vinc":"PROFLetras","setor_atend":"PROFLetras","descricao":"Levar a professora Marilda de Oliveira Costa, no aeroporto Marechal Rondon, e no retorno pegar a professora Maristela Cury Sarian, no aeroporto. OFÍCIO Nº 08555/2025/CAC-PPGEDU/UNEMAT - OFÍCIO Nº 08242/2025/CAC-PROFLETRAS/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"22102025\n262010013250005914\n26201.0013.25.002388-8\n26201.0013.25.002155-0"},{"os":"411495","mes":"OUT","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Buscar a Sra. Vanda Copacana Vilasboas, em Vila Bela da Santíssima Trindade, convidada a palestrar na abertura do I Encontro das PósGraduações Stricto Sensu em Geografia de Mato Grosso, a ser realizado em Cáceres - MT. OFÍCIO Nº 07797/2025/CAC-PPGGEO","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"23102025\n262010013250005965\n26201.0013.25.002393-4\n26201.0013.25.002160-7"},{"os":"391435","mes":"OUT","viajante":"FERNANDA MARTINS DA SILVA","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"A professora Dra. Fernanda Martins da Silva representará o Programa de Pós-graduação profissional/PROFHISTÓRIA , na visita da delegação da UNEMAT, à comunidade de San Miguelito, San Miguel  e San Ignacio de Velasco, na Bolívia. para discutir política","valor":9553.21,"motivo":"PÓS GRADUAÇÃO","situacao":"CANCELADA","obs":"24102025\n262010013250005876\n26201.0013.25.002384-5\n26201.0013.25.002151-8"},{"os":"411811","mes":"OUT","viajante":"RODNEY CAMPOS FARIA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar os professores convidados que participarão da programação do PPGGeo (I Encontro das Pós-Graduações Stricto Sensu em Geografia de Mato Grosso) até Cáceres. OFÍCIO Nº 08681/2025/CAC-FACH/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"24102025\n262010013250005973\n26201.0013.25.002404-3\n 26201.0013.25.002164-1"},{"os":"412267","mes":"OUT","viajante":"RODNEY CAMPOS FARIA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Buscar em Sinop, os Professores  para participar da Autoavaliação e Monitoramento das Metas do Planejamento Estratégico do PPGGeo/UNEMAT, a ocorrer no dia 28 de outubro de 2025, e o I Encontro das Pós-Graduações Stricto Sensu em Geografia de Mato Gro","valor":756.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"24102025\n262010013250006023\n26201.0013.25.002401-9\n26201.0013.25.002169-0"},{"os":"412274","mes":"OUT","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar para Sinop, professores e alunos participantes da Autoavaliação e Monitoramento das Metas do Planejamento Estratégico do PPGGeo/UNEMAT, a ocorrer no dia 28 de outubro de 2025, e o I Encontro das Pós-Graduações Stricto Sensu em Geografia de Mato","valor":453.75,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"24102025\n262010013250006031\n26201.0013.25.002399-3\n26201.0013.25.002168-2"},{"os":"412537","mes":"OUT","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar o professor Edevaldo Aparecido Souza, até o aeroporto Marechal Rondon, e no retorno trazer os professores Loriége Pessoa Bitencourt, Laudemir Luiz Zart e Marilda de Oliveira Costa, do aeroporto. OFÍCIO Nº 08957/2025/CAC-PPGGEO/UNEMAT - OFÍCIO N","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"29102025\n262010013250006041\n26201.0013.25.002398-5\n26201.0013.25.002167-4"},{"os":"412882","mes":"OUT","viajante":"ADALBERTO CESAR SERAPIAO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar os professores Rebeca Steiman,  até o aeroporto Marechal Rondon, Luciene Carvalho e Eduardo Silva com a equipe atlética do Centro Interdisciplinar de Pesquisas em Esporte e ExercícioFísico –CIPEEF/UNEMAT até o Ginásio Aecim Tocantins em Cuiabá-","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"29102025\n262010013250006082\n26201.0013.25.002397-7\n26201.0013.25.002166-6"},{"os":"412934","mes":"OUT","viajante":"TEODOMIRO GONCALVES SERAPIAO FILHO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar a Sra. Vanda Copacana Vilasboas, em Vila Bela da Santíssima Trindade, que palestrou na abertura do I Encontro das PósGraduações Stricto Sensu em Geografia de Mato Grosso, realizado em Cáceres – MT OFÍCIO Nº 07797/2025/CAC-PPGGEO/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"29102025\n262010013250006090\n26201.0013.25.002396-9\n26201.0013.25.002165-8"},{"os":"414281","mes":"OUT","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Buscar o professor Carlos Edinei de Oliveira, em Cuiabá, para participar da banca de prova local do processo seletivo do Programa de Pós-Graduação Profissional em Ensino de História (ProfHistória). OFÍCIO Nº 08616/2025/CAC-PROFHISTORIA/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"31102025\n262010013250006201\n 26201.0013.25.002436-1\n26201.0013.25.002187-9"},{"os":"412596","mes":"OUT","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar os professores convidados que participaram da programação do PPGGeo I Encontro das Pós-Graduações Stricto Sensu em Geografia de Mato Grosso, até o aeroporto Marechal Rondon. OFÍCIO Nº 08681/2025/CAC-FACH/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"29102025\n262010013250006181\n26201.0013.25.002434-5\n26201.0013.25.002185-2"},{"os":"416878","mes":"NOV","viajante":"MANOEL GOMES DA LUZ","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Buscar o professor Vinícius Modolo Teixeira no Terminal Rodoviário de Cuiabá, que ministrará a disciplina de Geopolítica e Dinâmica Espacial: território, poder edesenvolvimento em um mundo em disputas no programa de Pós-Graduação Stricto Sensu em Geo","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"06112025\n262010013250006309\n26201.0013.25.002491-4\n26201.0013.25.002232-8"},{"os":"416816","mes":"NOV","viajante":"JOAO BATISTA DE FIGUEIREDO","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar o professor Alceu Zoia, até a rodoviária de Cuiabá, que ministrou aulas no Programa de Pós-graduação Stricto Sensu em Educação em Cáceres. OFÍCIO Nº 08968/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"06112025\n262010013250006317\n26201.0013.25.002492-2\n26201.0013.25.002233-6"},{"os":"417138","mes":"NOV","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Conduzir o professor Luciano Pereira da Silva e o grupo de cururueiros e dançarinos de Siriri realizem atividades na Escola Estadual Madre Cristina (Mirassol D’Oeste-MT), localizada no Assentamento Roseli Nunes. OFÍCIO Nº 09291/2025/CAC-PROFHISTORIA/","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"06112025\n262010013250006333\n26201.0013.25.002496-5\n26201.0013.25.002258-1"},{"os":"418016","mes":"NOV","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Buscar o professor Vinícius Modolo Teixeira no Terminal Rodoviário de Cuiabá, que ministrará a disciplina de Geopolítica e Dinâmica Espacial: território, poder e desenvolvimento em um mundo em disputas no programa de Pós-Graduação Stricto Sensu em Ge","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"CANCELADA","obs":"08112025\n262010013250006341"},{"os":"418658","mes":"NOV","viajante":"MARCO ANTONIO CAMPOS LEONEL","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"DIÁRIA INDENIZATÓRIA, MOTIVO DOENÇA, NECESSIDADE DE TROCA DE MOTORISTA. Buscar o professor Vinícius Modolo Teixeira no Terminal Rodoviário de Cuiabá, que ministrará a disciplina de Geopolítica e Dinâmica Espacial: território, poder e desenvolvimento ","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"10112025\n262010013250006430\n 26201.0013.25.002505-8\n26201.0013.25.002267-0"},{"os":"418117","mes":"NOV","viajante":"LUCIANO PEREIRA DA SILVA","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Acompanhamento de orientando do Profhistória em sua pesquisa de campo em sala de aula","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"10112025\n262010013250006473\n26201.0013.25.002512-0\n26201.0013.25.002271-9"},{"os":"419752","mes":"NOV","viajante":"EDSON MACIEL DE LIMA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar o professor Vilmar Alves Pereira, do Programa de Pós-Graduação Stricto Sensu em Educação - CAC que participou da COP Pantanal Mirim, até Cuiabá. OFÍCIO Nº 09475/2025/CAC-PPGEDU/UNEMAT","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"CANCELADA","obs":"12112025"},{"os":"419661","mes":"NOV","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Levar o professor Vinicius Modolo Teixeira, no Terminal Rodoviário de Cuiabá, que ministrou a disciplina de Geopolítica e Dinâmica Espacial: território, poder e desenvolvimento em um mundo em disputas no programa de Pós-Graduação Stricto Sensu em Geo","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"CANCELADA","obs":"12112025"},{"os":"419918","mes":"NOV","viajante":"MANOEL GOMES DA LUZ","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Conduzir professores para realizar visita institucional à Comunidade de San Miguelito e às cidades de San Rafael, San Miguel e San Ignacio de Velasco, nas Províncias de Velasco e Angel Sandoval, localizados na Bolívia. OFÍCIO Nº 08958/2025/CAC-PPGGEO","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"12112025\n262010013250006538\n26201.0013.25.002520-1\n26201.0013.25.002280-8"},{"os":"420112","mes":"NOV","viajante":"Matheus de Mesquita e Pontes","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"O professor Matheus de Mesquita e Pontes, IFMT/MT, cedido para o IFMT/GO, faz parte do corpo docente do Programa de Pós-graduação Profissional em Ensino de História e virá a Cáceres para ministrar aulas no Mestrado Profissional em Ensino de História/","valor":3195.5,"motivo":"PÓS GRADUAÇÃO","situacao":"CANCELADA","obs":"13112025"},{"os":"420620","mes":"NOV","viajante":"Matheus de Mesquita e Pontes","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"O professor Matheus de Mesquita e Pontes, IFMT/MT, cedido para o IFMT/GO, faz parte do corpo docente do Programa de Pós-graduação Profissional em Ensino de História e virá a Cáceres para ministrar aulas no Mestrado e realizar orientações de pesquisa ","valor":3195.5,"motivo":"PÓS GRADUAÇÃO","situacao":"CANCELADA","obs":"13112025"},{"os":"421726","mes":"NOV","viajante":"Matheus de Mesquita e Pontes","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"O professor Matheus de Mesquita e Pontes, IFMT/MT, cedido para o IFMT/GO, faz parte do corpo docente Permanente do Programa de Pós-graduação Profissional em Ensino de História e virá a Cáceres para ministrar aulas no Mestrado, e realizar orientações ","valor":3195.5,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"17112025\n262010013250006554\n26201.0013.25.002525-2\n 26201.0013.25.002283-2"},{"os":"424169","mes":"NOV","viajante":"ADRIANO LUIZ DA SILVA","setor_sol":"PPGGeo","setor_vinc":"PPGGeo","setor_atend":"PPGGeo","descricao":"Buscar em Palmarito - Vila Bella S. Trindade, os professores que realizaram visita institucional à Comunidade de San Miguelito e às cidades de San Rafael, San Miguel e San Ignacio de Velasco, nas Províncias de Velasco e Angel Sandoval, localizados na","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"19112025\n262010013250006562\n26201.0013.25.002530-9\n26201.0013.25.002286-7"},{"os":"426670","mes":"NOV","viajante":"MANOEL GOMES DA LUZ","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Levar para Cuiabá, a Docente Loriége Pessoa Bitencourt,  docentes e discentes do Programa  de Pós-Graduação Stricto Sensu em Educação e alunos da Pedagogia, que participarão do Seminário de Educação (SemiEdu), na Universidade Federal de Mato Grosso -","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"25112025\n262010013250006600\n26201.0013.25.002590-2\n26201.0013.25.002317-0"},{"os":"428677","mes":"NOV","viajante":"ADRIANO LUIZ DA SILVA","setor_sol":"PPGEdu","setor_vinc":"PPGEdu","setor_atend":"PPGEdu","descricao":"Buscar em Cuiabá, a Docente Loriége Pessoa Bitencourt,  docentes e discentes do Programa  de Pós-Graduação Stricto Sensu em Educação e alunos da Pedagogia, que participaram do Seminário de Educação (SemiEdu), na Universidade Federal de Mato Grosso - ","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"27112025\n262010013250006651\n26201.0013.25.002604-6\n26201.0013.25.002329-4"},{"os":"437245","mes":"DEZ","viajante":"ORLANDO LUIZ DAS NEVES MOTA","setor_sol":"PROFHISTÓRIA","setor_vinc":"PROFHISTÓRIA","setor_atend":"PROFHISTÓRIA","descricao":"Buscar no Aeroporto, a docente Prof.ª Dr.ª Estephane da Silva Cunha Lopes, que virá a Cáceres para a aplicação da prova do Mestrado Profissional em Ensino de História (ProfHistória/UNEMAT), no dia  07 de dezembro de 2025. A docente integra o quadro d","valor":151.25,"motivo":"PÓS GRADUAÇÃO","situacao":"EXECUTADA","obs":"04122025\n262010013250006759\n26201.0013.25.002644-5\n26201.0013.25.002375-8"}];
 
-const ORC = {
+// ── Previsão editável (salva no navegador)
+const ORC_DEFAULT = {
   campus: {
-    'SUP.TRANSP/DURA': {prev:70000, exec:80162.5},
-    'FACAB':           {prev:22025.67, exec:8621.25},
-    'FACISA':          {prev:14200.39, exec:15473.25},
-    'FACH':            {prev:12767.5,  exec:12827.5},
-    'FACEL':           {prev:13055.22, exec:11495},
-    'FACET':           {prev:10878.59, exec:756.25},
-    'FACIS':           {prev:23572.64, exec:15115.5},
-    'DPPF/DURA':       {prev:20000,    exec:28687.25},
-    'Cap.Téc.':        {prev:10000,    exec:0}
+    'SUP.TRANSP/DURA': {prev:70000},
+    'FACAB':           {prev:22025.67},
+    'FACISA':          {prev:14200.39},
+    'FACH':            {prev:12767.5},
+    'FACEL':           {prev:13055.22},
+    'FACET':           {prev:10878.59},
+    'FACIS':           {prev:23572.64},
+    'DPPF/DURA':       {prev:20000},
+    'Cap.Téc.':        {prev:10000}
   },
   posgrad: {
-    'PPGGeo':      {prev:20000, exec:19965},
-    'PPGEdu':      {prev:20000, exec:19749},
-    'PPGL':        {prev:20000, exec:20565.25},
-    'PROFHISTÓRIA':{prev:20000, exec:13331.75},
-    'PPGCA':       {prev:20000, exec:20094.75},
-    'PROFLetras':  {prev:10000, exec:605},
-    'PPGMP':       {prev:0,     exec:0}
+    'PPGGeo':      {prev:20000},
+    'PPGEdu':      {prev:20000},
+    'PPGL':        {prev:20000},
+    'PROFHISTÓRIA':{prev:20000},
+    'PPGCA':       {prev:20000},
+    'PROFLetras':  {prev:10000},
+    'PPGMP':       {prev:0}
   }
 };
+
+function loadORC() {
+  try {
+    const s = localStorage.getItem('orcamento2026');
+    if (s) return JSON.parse(s);
+  } catch(e){}
+  const o = { campus:{}, posgrad:{} };
+  Object.entries(ORC_DEFAULT.campus).forEach(([k,v])=>{ o.campus[k]={prev:v.prev}; });
+  Object.entries(ORC_DEFAULT.posgrad).forEach(([k,v])=>{ o.posgrad[k]={prev:v.prev}; });
+  return o;
+}
+
+function saveORC(orc) {
+  localStorage.setItem('orcamento2026', JSON.stringify(orc));
+}
+
+// Executado calculado automaticamente dos lançamentos (exclui cancelados)
+function calcExec(orc) {
+  const mapC = {
+    'TRANSPORTE':'SUP.TRANSP/DURA','FACAB':'FACAB','FACISA':'FACISA',
+    'FACH':'FACH','FACEL':'FACEL','FACET':'FACET','FACIS':'FACIS','DPPF/DURA':'DPPF/DURA'
+  };
+  Object.keys(orc.campus).forEach(k => orc.campus[k].exec = 0);
+  DC.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
+    const k=mapC[r.setor_sol];
+    if(k && orc.campus[k]) orc.campus[k].exec += r.valor;
+  });
+  Object.keys(orc.posgrad).forEach(k => orc.posgrad[k].exec = 0);
+  DP.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
+    const k=r.setor_sol;
+    if(orc.posgrad[k]) orc.posgrad[k].exec += r.valor;
+  });
+  return orc;
+}
+
+let ORC = calcExec(loadORC());
 
 const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
 
@@ -803,7 +894,7 @@ function showMain(tab){
   if(tab==='dashboard') renderDash();
   if(tab==='campus')    { renderCampus(); buildSGCampus(); }
   if(tab==='posgrad')   { renderPos();   buildSGPos(); }
-  if(tab==='orcamento') renderOrc();
+  if(tab==='orcamento'){ ORC=calcExec(loadORC()); renderOrc(); }
 }
 
 function showSec(sec, part){
@@ -1451,71 +1542,173 @@ function excluir(pref, idx){
 // ═══════════════════════════════════════
 //  ORÇAMENTO
 // ═══════════════════════════════════════
-function renderOrc(){
-  function buildOrcTable(obj, id, cor){
-    const items=Object.entries(obj);
-    const tP=items.reduce((s,[,v])=>s+v.prev,0);
-    const tE=items.reduce((s,[,v])=>s+v.exec,0);
-    let html=`<tr><th>Setor</th><th>Previsto</th><th>Executado</th><th>Saldo</th><th>%</th></tr>`;
-    items.forEach(([k,v])=>{
-      const pct=v.prev>0?Math.min(v.exec/v.prev*100,100):0;
-      const over=v.exec>v.prev;
-      const sld=v.prev-v.exec;
-      html+=`<tr><td><strong>${k}</strong></td><td>${fmt(v.prev)}</td><td>${fmt(v.exec)}</td>
-        <td class="${sld>=0?'pos':'neg'}">${fmt(Math.abs(sld))} ${sld>=0?'▲':'▼'}</td>
-        <td><div style="font-size:10.5px;font-weight:700;color:${over?'var(--verm)':'var(--verde)'}">${Math.round(v.prev>0?v.exec/v.prev*100:0)}%</div>
-        <div class="pm"><div class="pf ${cor} ${over?'over':''}" style="width:${Math.min(pct,100)}%"></div></div></td></tr>`;
-    });
-    html+=`<tr><td>TOTAL</td><td>${fmt(tP)}</td><td>${fmt(tE)}</td>
-      <td class="${(tP-tE)>=0?'pos':'neg'}">${fmt(Math.abs(tP-tE))} ${(tP-tE)>=0?'▲':'▼'}</td>
-      <td><strong>${Math.round(tP>0?tE/tP*100:0)}%</strong></td></tr>`;
-    document.getElementById(id).innerHTML=html;
+// ─── Subtabs do orçamento
+function showOrcSec(sec) {
+  document.getElementById('orc-visao').style.display  = sec==='visao'  ? 'block' : 'none';
+  document.getElementById('orc-editar').style.display = sec==='editar' ? 'block' : 'none';
+  const btns = document.querySelectorAll('#tab-orcamento .stab');
+  btns[0].classList.toggle('on', sec==='visao');
+  btns[1].classList.toggle('on', sec==='editar');
+  if (sec==='editar') renderOrcForms();
+}
+
+// ─── Formulários editáveis
+function renderOrcForms() {
+  ORC = calcExec(loadORC());
+  buildOrcForm('campus',  ORC.campus,  'orc-tbody-campus',  'orc-tfoot-campus');
+  buildOrcForm('posgrad', ORC.posgrad, 'orc-tbody-posgrad', 'orc-tfoot-posgrad');
+}
+
+function buildOrcForm(tipo, obj, tbodyId, tfootId) {
+  const isC   = tipo === 'campus';
+  const cor   = isC ? 'var(--azul)'  : 'var(--verde)';
+  const corBg = isC ? '#f0f5ff'      : '#f0fff8';
+  let html = '', tP = 0, tE = 0;
+  Object.entries(obj).forEach(([k, v]) => {
+    const exec  = v.exec  || 0;
+    const prev  = v.prev  || 0;
+    const saldo = prev - exec;
+    tP += prev; tE += exec;
+    const sid = 'orc-' + tipo + '-' + k.replace(/[^a-z0-9]/gi, '_');
+    html += `<tr style="border-bottom:1px solid var(--borda)">
+      <td style="padding:9px 10px;font-weight:600">${k}</td>
+      <td style="padding:9px 10px;text-align:right">
+        <input type="number" step="0.01" min="0" id="${sid}" value="${prev.toFixed(2)}"
+          onchange="recalcOrcRow(this,'${tipo}','${k}')"
+          style="width:130px;border:1.5px solid var(--borda);border-radius:7px;padding:6px 10px;
+                 font-size:13px;font-family:'IBM Plex Sans',sans-serif;text-align:right;
+                 background:${corBg};outline:none;transition:border-color .2s"
+          onfocus="this.style.borderColor='${cor}'" onblur="this.style.borderColor='var(--borda)'">
+      </td>
+      <td id="${sid}_exec"  style="padding:9px 10px;text-align:right;font-weight:600;color:${cor}">${fmt(exec)}</td>
+      <td id="${sid}_saldo" style="padding:9px 10px;text-align:right;font-weight:700;color:${saldo>=0?'var(--verde)':'var(--verm)'}">
+        ${fmt(Math.abs(saldo))} ${saldo>=0?'▲':'▼'}
+      </td>
+    </tr>`;
+  });
+  document.getElementById(tbodyId).innerHTML = html;
+  const saldoT = tP - tE;
+  document.getElementById(tfootId).innerHTML = `
+    <tr style="border-top:2px solid var(--borda);background:var(--cinza-bg)">
+      <td style="padding:10px;font-weight:700">TOTAL</td>
+      <td id="orc-total-prev-${tipo}" style="padding:10px;text-align:right;font-weight:700">${fmt(tP)}</td>
+      <td style="padding:10px;text-align:right;font-weight:700;color:${cor}">${fmt(tE)}</td>
+      <td style="padding:10px;text-align:right;font-weight:700;color:${saldoT>=0?'var(--verde)':'var(--verm)'}">
+        ${fmt(Math.abs(saldoT))} ${saldoT>=0?'▲':'▼'}
+      </td>
+    </tr>`;
+}
+
+function recalcOrcRow(input, tipo, key) {
+  const newPrev = parseFloat(input.value) || 0;
+  const orc = loadORC();
+  if (!orc[tipo][key]) orc[tipo][key] = {};
+  orc[tipo][key].prev = newPrev;
+  saveORC(orc);
+  ORC = calcExec(orc);
+  const sid   = 'orc-' + tipo + '-' + key.replace(/[^a-z0-9]/gi, '_');
+  const exec  = ORC[tipo][key].exec || 0;
+  const saldo = newPrev - exec;
+  const eEl   = document.getElementById(sid + '_exec');
+  const sEl   = document.getElementById(sid + '_saldo');
+  if (eEl) eEl.textContent = fmt(exec);
+  if (sEl) {
+    sEl.textContent = fmt(Math.abs(saldo)) + ' ' + (saldo>=0?'▲':'▼');
+    sEl.style.color = saldo>=0 ? 'var(--verde)' : 'var(--verm)';
   }
-  buildOrcTable(ORC.campus,'ot-campus','azul');
+  const allPrev = Object.values(ORC[tipo]).reduce((s,v)=>s+(v.prev||0),0);
+  const tEl = document.getElementById('orc-total-prev-'+tipo);
+  if (tEl) tEl.textContent = fmt(allPrev);
+}
+
+function saveOrcForm(tipo) {
+  const orc = loadORC();
+  Object.keys(orc[tipo]).forEach(k => {
+    const sid   = 'orc-' + tipo + '-' + k.replace(/[^a-z0-9]/gi, '_');
+    const input = document.getElementById(sid);
+    if (input) orc[tipo][k].prev = parseFloat(input.value) || 0;
+  });
+  saveORC(orc);
+  ORC = calcExec(orc);
+  toast('✅ Previsão salva com sucesso!', tipo==='campus'?'azul':'verd');
+  renderOrc();
+}
+
+function renderOrc(){
+  ORC = calcExec(loadORC());
+
+  // ── Tabelas resumo
+  function buildOrcTable(obj, id, cor){
+    const items = Object.entries(obj);
+    const tP = items.reduce((s,[,v])=>s+(v.prev||0),0);
+    const tE = items.reduce((s,[,v])=>s+(v.exec||0),0);
+    let html = `<tr><th>Setor</th><th>Previsto</th><th>Executado</th><th>Saldo</th><th>%</th></tr>`;
+    items.forEach(([k,v])=>{
+      const prev=v.prev||0, exec=v.exec||0;
+      const pct=prev>0?Math.min(exec/prev*100,100):0;
+      const over=exec>prev, sld=prev-exec;
+      html+=`<tr>
+        <td><strong>${k}</strong></td>
+        <td>${fmt(prev)}</td>
+        <td>${fmt(exec)}</td>
+        <td class="${sld>=0?'pos':'neg'}">${fmt(Math.abs(sld))} ${sld>=0?'▲':'▼'}</td>
+        <td>
+          <div style="font-size:10.5px;font-weight:700;color:${over?'var(--verm)':'var(--verde)'}">
+            ${Math.round(prev>0?exec/prev*100:0)}%
+          </div>
+          <div class="pm"><div class="pf ${cor} ${over?'over':''}" style="width:${Math.min(pct,100)}%"></div></div>
+        </td>
+      </tr>`;
+    });
+    html+=`<tr>
+      <td>TOTAL</td><td>${fmt(tP)}</td><td>${fmt(tE)}</td>
+      <td class="${(tP-tE)>=0?'pos':'neg'}">${fmt(Math.abs(tP-tE))} ${(tP-tE)>=0?'▲':'▼'}</td>
+      <td><strong>${Math.round(tP>0?tE/tP*100:0)}%</strong></td>
+    </tr>`;
+    document.getElementById(id).innerHTML = html;
+  }
+  buildOrcTable(ORC.campus, 'ot-campus', 'azul');
   buildOrcTable(ORC.posgrad,'ot-posgrad','verd');
 
+  // ── Evolução mensal
   function buildMensal(arr, id, cor){
     const m={};MESES.forEach(mes=>m[mes]=0);
-    arr.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{if(m[r.mes]!==undefined)m[r.mes]+=r.valor;});
+    arr.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
+      if(m[r.mes]!==undefined) m[r.mes]+=r.valor;
+    });
     const isAzul = cor==='azul';
-    // Create canvas container
-    document.getElementById(id).innerHTML='<div class="chart-box" style="height:180px"><canvas id="'+id+'_cv"></canvas></div>';
-    const gradStart = isAzul ? 'rgba(26,58,92,0.88)' : 'rgba(26,92,58,0.88)';
-    const gradEnd   = isAzul ? 'rgba(58,124,191,0.4)' : 'rgba(76,163,114,0.4)';
-    const borderC   = isAzul ? '#3a7cbf' : '#4ca372';
-    mkChart(id+'_cv', {
+    document.getElementById(id).innerHTML =
+      '<div class="chart-box" style="height:200px"><canvas id="'+id+'_cv"></canvas></div>';
+    const gradStart = isAzul?'rgba(26,58,92,0.88)':'rgba(26,92,58,0.88)';
+    const gradEnd   = isAzul?'rgba(58,124,191,0.5)':'rgba(76,163,114,0.5)';
+    mkChart(id+'_cv',{
       type:'bar',
-      data:{
-        labels: MESES,
-        datasets:[{
-          label:'Valor (R$)',
-          data: MESES.map(mes=>m[mes]),
-          backgroundColor: ctx=>{
-            const g=ctx.chart.ctx.createLinearGradient(0,0,0,180);
-            g.addColorStop(0,gradStart); g.addColorStop(1,gradEnd); return g;
-          },
-          borderColor: borderC, borderWidth:1.5,
-          borderRadius:5, borderSkipped:false,
-        }]
-      },
+      data:{ labels:MESES, datasets:[{
+        label:'Valor (R$)', data:MESES.map(mes=>m[mes]),
+        backgroundColor: ctx=>{ const g=ctx.chart.ctx.createLinearGradient(0,0,0,200);
+          g.addColorStop(0,gradStart);g.addColorStop(1,gradEnd);return g; },
+        borderColor: isAzul?'#3a7cbf':'#4ca372',
+        borderWidth:1.5, borderRadius:6, borderSkipped:false,
+      }]},
       options:{
         responsive:true, maintainAspectRatio:false,
+        layout:{ padding:{top:30,right:10} },
         animation:{ duration:900, easing:'easeOutQuart' },
         plugins:{
           legend:{display:false},
           tooltip:{ backgroundColor:'rgba(26,26,40,0.9)', padding:9, cornerRadius:8,
             callbacks:{ label: ctx=>' '+fmt(ctx.raw) } },
           datalabels:{
-            anchor:'end', align:'end',
-            formatter: v => v > 0 ? 'R$'+(v/1000).toFixed(0)+'k' : '',
-            font:{ size:8.5, weight:'700' },
-            color: isAzul ? '#1a3a5c' : '#1a5c3a',
-            padding:1,
+            anchor:'end', align:'top', offset:3,
+            formatter: v => v>0 ? 'R$'+(v/1000).toFixed(0)+'k' : '',
+            font:{size:9, weight:'700'},
+            color: isAzul?'#1a3a5c':'#1a5c3a',
           }
         },
         scales:{
           x:{ grid:{display:false}, ticks:{font:{size:10}} },
-          y:{ grid:{color:'rgba(208,217,232,0.4)'}, ticks:{font:{size:10}, callback:v=>v>=1000?'R$'+(v/1000).toFixed(0)+'k':'R$'+v} }
+          y:{ grid:{color:'rgba(208,217,232,0.4)'}, ticks:{font:{size:10},
+            callback:v=>v>=1000?'R$'+(v/1000).toFixed(0)+'k':'R$'+v } }
         }
       }
     });
@@ -1523,9 +1716,10 @@ function renderOrc(){
   buildMensal(DC,'ot-mes-c','azul');
   buildMensal(DP,'ot-mes-p','verde');
 
-  // Grouped bar: Previsto vs Executado Campus
-  function buildOrcChart(obj, id, corPrev, corExec){
-    const entries = Object.entries(obj).filter(([,v])=>v.prev>0||v.exec>0);
+  // ── Previsto vs Executado — labels acima das barras
+  function buildOrcChart(obj, id, corA, corB, labelColor){
+    const entries = Object.entries(obj);
+    const maxVal  = Math.max(...entries.map(([,v])=>Math.max(v.prev||0,v.exec||0)), 1);
     mkChart(id,{
       type:'bar',
       data:{
@@ -1533,53 +1727,50 @@ function renderOrc(){
         datasets:[
           {
             label:'Previsto',
-            data: entries.map(([,v])=>v.prev),
-            backgroundColor:'rgba(139,152,180,0.45)',
-            borderColor:'rgba(139,152,180,0.9)',
-            borderWidth:1.5, borderRadius:4, borderSkipped:false,
+            data: entries.map(([,v])=>v.prev||0),
+            backgroundColor:'rgba(139,152,180,0.35)',
+            borderColor:'rgba(139,152,180,0.8)',
+            borderWidth:1.5, borderRadius:5, borderSkipped:false,
           },
           {
             label:'Executado',
-            data: entries.map(([,v])=>v.exec),
-            backgroundColor: ctx=>{
-              const g=ctx.chart.ctx.createLinearGradient(0,0,0,240);
-              g.addColorStop(0,corPrev); g.addColorStop(1,corExec); return g;
-            },
-            borderColor: corPrev.replace('0.88','1'),
-            borderWidth:1.5, borderRadius:4, borderSkipped:false,
+            data: entries.map(([,v])=>v.exec||0),
+            backgroundColor: ctx=>{ const g=ctx.chart.ctx.createLinearGradient(0,0,0,260);
+              g.addColorStop(0,corA);g.addColorStop(1,corB);return g; },
+            borderColor: corA, borderWidth:1.5, borderRadius:5, borderSkipped:false,
           }
         ]
       },
       options:{
         responsive:true, maintainAspectRatio:false,
-        animation:{ duration:900, easing:'easeOutQuart', delay:ctx=>ctx.dataIndex*50 },
+        layout:{ padding:{top:34,right:10} },
+        animation:{ duration:900, easing:'easeOutQuart', delay:ctx=>ctx.dataIndex*40 },
         plugins:{
           legend:{ position:'bottom', labels:{boxWidth:10, padding:12, font:{size:11}} },
-          tooltip:{
-            backgroundColor:'rgba(26,26,40,0.9)', padding:10, cornerRadius:8,
-            callbacks:{ label: ctx=>' '+ctx.dataset.label+': '+fmt(ctx.raw) }
+          tooltip:{ backgroundColor:'rgba(26,26,40,0.9)', padding:10, cornerRadius:8,
+            callbacks:{ label: ctx=>' '+ctx.dataset.label+': '+fmt(ctx.raw) } },
+          datalabels:{
+            anchor:'end', align:'top', offset:3,
+            display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+            formatter: v => v>0 ? 'R$'+(v/1000).toFixed(0)+'k' : '',
+            font:{size:9, weight:'700'},
+            color: ctx => ctx.datasetIndex===0 ? '#6b7a99' : labelColor,
           }
         },
         scales:{
           x:{ grid:{display:false}, ticks:{font:{size:10}} },
-          y:{ grid:{color:'rgba(208,217,232,0.4)'}, ticks:{font:{size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'} }
+          y:{
+            suggestedMax: maxVal * 1.28,
+            grid:{color:'rgba(208,217,232,0.4)'},
+            ticks:{font:{size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'}
+          }
         }
       }
     });
   }
-  buildOrcChart(ORC.campus,  'ch-orc-camp', 'rgba(26,58,92,0.88)',  'rgba(58,124,191,0.4)');
-  buildOrcChart(ORC.posgrad, 'ch-orc-pos',  'rgba(26,92,58,0.88)',  'rgba(76,163,114,0.4)');
+  buildOrcChart(ORC.campus,  'ch-orc-camp','rgba(26,58,92,0.85)','rgba(58,124,191,0.4)','#1a3a5c');
+  buildOrcChart(ORC.posgrad, 'ch-orc-pos', 'rgba(26,92,58,0.85)','rgba(76,163,114,0.4)','#1a5c3a');
 }
-
-// ═══════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════
-function toast(msg, cor){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className=`toast ${cor} show`;
-  setTimeout(()=>t.classList.remove('show'),2800);
-}
-
 // ═══════════════════════════════════════
 //  CONFIGURAÇÕES
 // ═══════════════════════════════════════

@@ -1471,6 +1471,7 @@ function salvarC(){
   // Aviso de sucesso, limpa campos e fica no formulário para novo lançamento
   toast('✅ OS ' + os + ' lançada com sucesso! (Campus)', 'azul', 4000);
   limparC();
+  cFilt = [...DC]; // atualiza filtro com novo registro
 }
 
 function salvarP(){
@@ -1516,6 +1517,7 @@ function salvarP(){
   // Aviso de sucesso, limpa campos e fica no formulário para novo lançamento
   toast('✅ OS ' + os + ' lançada com sucesso! (Pós-Graduação)', 'verd', 4000);
   limparP();
+  pFilt = [...DP]; // atualiza filtro com novo registro
 }
 
 function limparC(){
@@ -1879,10 +1881,23 @@ function cfgSaveUrl(){
     });
 }
 async function cfgSyncNow(){
-  document.getElementById('cfg-status').textContent = '⏳ Buscando dados...';
-  await loadFromServer();
-  document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verde)">✅ Dados atualizados!</span>';
-  renderDash();
+  document.getElementById('cfg-status').textContent = '⏳ Buscando dados do servidor...';
+  try {
+    const [dc, dp] = await Promise.all([apiGet('campus'), apiGet('posgrad')]);
+    let n = 0;
+    if (dc && dc.length > 0) { DC = dc.map(r=>({...r,valor:parseFloat(r.valor)||0})); saveC(); n+=dc.length; }
+    if (dp && dp.length > 0) { DP = dp.map(r=>({...r,valor:parseFloat(r.valor)||0})); saveP(); n+=dp.length; }
+    ORC = calcExec(loadORC());
+    preencheDL();
+    cFilt=[...DC]; pFilt=[...DP];
+    renderDash();
+    document.getElementById('cfg-status').innerHTML =
+      '<span style="color:var(--verde)">✅ Sincronizado! '+n+' registros carregados.</span>';
+    toast('✅ Dados sincronizados com o servidor!','azul',4000);
+  } catch(e) {
+    document.getElementById('cfg-status').innerHTML =
+      '<span style="color:var(--verm)">❌ Erro ao conectar. Verifique a URL.</span>';
+  }
 }
 async function cfgUploadAll(){
   if (!confirm('Isso vai SUBSTITUIR todos os dados no servidor pelos dados locais.\n\nConfirma a carga inicial?')) return;
@@ -1909,6 +1924,36 @@ Object.defineProperty(window, '_getApiUrl', { value: () => API_URL_SAVED || API_
 ORC = calcExec(loadORC()); // DC e DP já estão definidos aqui
 preencheDL();
 renderDash();
+
+// ── Sincronização automática ao abrir
+// Se a URL do servidor estiver configurada, busca os dados mais recentes
+(async () => {
+  if (API_OK()) {
+    showSyncMsg('⏳ Sincronizando dados...');
+    try {
+      const [dc, dp] = await Promise.all([apiGet('campus'), apiGet('posgrad')]);
+      let updated = false;
+      if (dc && dc.length > 0) {
+        DC = dc.map(r => ({...r, valor: parseFloat(r.valor)||0}));
+        saveC(); updated = true;
+      }
+      if (dp && dp.length > 0) {
+        DP = dp.map(r => ({...r, valor: parseFloat(r.valor)||0}));
+        saveP(); updated = true;
+      }
+      if (updated) {
+        ORC = calcExec(loadORC());
+        preencheDL();
+        renderDash();
+        showSyncMsg('✅ Dados atualizados do servidor!');
+      } else {
+        showSyncMsg('✅ Conectado — dados em dia!');
+      }
+    } catch(e) {
+      showSyncMsg('⚠️ Usando dados locais (sem conexão)');
+    }
+  }
+})();
 </script>
 </body>
 </html>

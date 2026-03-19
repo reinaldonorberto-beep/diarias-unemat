@@ -776,50 +776,54 @@ const API_URL = 'COLE_SUA_URL_AQUI'; // ← Substitua pela URL do seu Apps Scrip
 const API_OK = () => { const u = localStorage.getItem('diarias_api_url') || API_URL; return u && u !== 'COLE_SUA_URL_AQUI'; };
 const getApiUrl = () => localStorage.getItem('diarias_api_url') || API_URL;
 
-// Buscar dados do servidor
-async function apiGet(sheet) {
+// ── Chamada GET genérica ao Apps Script (sem CORS issues)
+async function apiCall(params) {
   if (!API_OK()) return null;
   try {
-    const r = await fetch(getApiUrl() + '?action=get&sheet=' + sheet + '&t=' + Date.now());
-    const j = await r.json();
-    return j.ok ? j.data : null;
-  } catch(e) { console.warn('API GET error:', e); return null; }
+    const url = getApiUrl() + '?' + new URLSearchParams({...params, t: Date.now()}).toString();
+    const r   = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } catch(e) { console.warn('API error:', e); return null; }
 }
 
-// Salvar um registro
+// Buscar dados do servidor
+async function apiGet(sheet) {
+  const j = await apiCall({ action:'get', sheet });
+  return j && j.ok ? j.data : null;
+}
+
+// Salvar um registro (via GET com record codificado)
 async function apiSave(sheet, record) {
-  if (!API_OK()) return null;
-  try {
-    const r = await fetch(getApiUrl(), {
-      method: 'POST',
-      body: JSON.stringify({ action:'save', sheet, record })
-    });
-    return await r.json();
-  } catch(e) { console.warn('API SAVE error:', e); return null; }
+  const j = await apiCall({
+    action: 'save',
+    sheet,
+    record: encodeURIComponent(JSON.stringify(record))
+  });
+  return j;
 }
 
 // Excluir um registro
 async function apiDelete(sheet, _id) {
-  if (!API_OK()) return null;
-  try {
-    const r = await fetch(getApiUrl(), {
-      method: 'POST',
-      body: JSON.stringify({ action:'delete', sheet, _id })
-    });
-    return await r.json();
-  } catch(e) { console.warn('API DELETE error:', e); return null; }
+  const j = await apiCall({ action:'delete', sheet, _id });
+  return j;
 }
 
-// Carga inicial em lote
+// Carga inicial em lote (divide em chunks para não ultrapassar limite de URL)
 async function apiBulk(sheet, records) {
-  if (!API_OK()) return null;
-  try {
-    const r = await fetch(getApiUrl(), {
-      method: 'POST',
-      body: JSON.stringify({ action:'bulk', sheet, records })
+  const CHUNK = 50;
+  let total = 0;
+  for (let i = 0; i < records.length; i += CHUNK) {
+    const chunk = records.slice(i, i + CHUNK);
+    const j = await apiCall({
+      action:  i === 0 ? 'bulk' : 'bulk_append',
+      sheet,
+      records: encodeURIComponent(JSON.stringify(chunk))
     });
-    return await r.json();
-  } catch(e) { console.warn('API BULK error:', e); return null; }
+    if (!j || !j.ok) return { ok: false, error: 'Falha no chunk ' + i };
+    total += j.count || chunk.length;
+  }
+  return { ok: true, count: total };
 }
 
 // Carregar dados do servidor (substitui localStorage)
@@ -1461,7 +1465,8 @@ function salvarC(){
   }
   document.getElementById('ci-os').style.borderColor = '';
 
-  const reg = {os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs};
+  const _id = editIdx !== '' ? (DC[parseInt(editIdx)]._id || '') : ('id_' + Date.now() + '_' + Math.random().toString(36).substr(2,6));
+  const reg = {os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs,_id};
   if(editIdx!=='') DC[parseInt(editIdx)]=reg; else DC.unshift(reg);
   saveC();
   apiSave('campus', reg).then(r => {
@@ -1507,7 +1512,8 @@ function salvarP(){
   }
   document.getElementById('pi-os').style.borderColor = '';
 
-  const reg = {os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs};
+  const _id = editIdx !== '' ? (DP[parseInt(editIdx)]._id || '') : ('id_' + Date.now() + '_' + Math.random().toString(36).substr(2,6));
+  const reg = {os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs,_id};
   if(editIdx!=='') DP[parseInt(editIdx)]=reg; else DP.unshift(reg);
   saveP();
   apiSave('posgrad', reg).then(r => {
@@ -2015,16 +2021,18 @@ function cfgSaveUrl(){
   window._API_URL_OVERRIDE = url;
   document.getElementById('cfg-status').textContent = '⏳ Testando conexão...';
   fetch(url + '?action=get&sheet=campus&t=' + Date.now())
-    .then(r => r.json())
-    .then(j => {
-      if (j.ok !== undefined) {
-        document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verde)">✅ Conexão OK! URL salva.</span>';
-      } else {
-        document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verm)">❌ Resposta inesperada do servidor</span>';
-      }
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
     })
-    .catch(() => {
-      document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verm)">❌ Não foi possível conectar. Verifique a URL.</span>';
+    .then(j => {
+      const n = Array.isArray(j.data) ? j.data.length : '?';
+      document.getElementById('cfg-status').innerHTML =
+        '<span style="color:var(--verde)">✅ Conexão OK! ' + n + ' registros no servidor.</span>';
+    })
+    .catch(err => {
+      document.getElementById('cfg-status').innerHTML =
+        '<span style="color:var(--verm)">❌ Erro: ' + err.message + '. Verifique a URL e se o Apps Script está publicado como "Qualquer pessoa".</span>';
     });
 }
 async function cfgSyncNow(){

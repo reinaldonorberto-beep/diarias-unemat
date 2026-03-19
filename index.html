@@ -764,7 +764,7 @@ function calcExec(orc) {
   return orc;
 }
 
-let ORC = calcExec(loadORC());
+let ORC = {}; // inicializado após DC e DP
 
 const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
 
@@ -1837,6 +1837,7 @@ Object.defineProperty(window, '_getApiUrl', { value: () => API_URL_SAVED || API_
 // ═══════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════
+ORC = calcExec(loadORC()); // DC e DP já estão definidos aqui
 preencheDL();
 renderDash();
 </script>

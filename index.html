@@ -1590,18 +1590,44 @@ function editar(pref, idx){
 }
 
 function excluir(pref, idx){
-  const arr=pref==='c'?DC:DP;
-  if(!confirm(`Excluir OS ${arr[idx].os}? Esta ação não pode ser desfeita.`))return;
-  const _id = arr[idx]._id;
-  arr.splice(idx,1);
-  if(pref==='c'){
-    saveC();
-    if(_id) apiDelete('campus',_id).then(r=>{ if(r&&r.ok) showSyncMsg('☁️ Removido do servidor'); });
-    toast('🗑️ Removido (Campus)','azul');renderCampus();
-  } else {
-    saveP();
-    if(_id) apiDelete('posgrad',_id).then(r=>{ if(r&&r.ok) showSyncMsg('☁️ Removido do servidor'); });
-    toast('🗑️ Removido (Pós-Grad)','verd');renderPos();
+  const arr = pref==='c' ? DC : DP;
+  const reg = arr[idx];
+  if(!confirm(`Excluir OS ${reg.os}?\nEsta ação não pode ser desfeita.`)) return;
+
+  const sheet = pref==='c' ? 'campus' : 'posgrad';
+  arr.splice(idx, 1);
+
+  if(pref==='c'){ saveC(); renderCampus(); } else { saveP(); renderPos(); }
+  toast('🗑️ Removido localmente. Sincronizando...', pref==='c'?'azul':'verd', 2500);
+
+  // Tenta excluir pelo _id; se não tiver, usa o número de OS como chave
+  const _id = reg._id || null;
+  const os  = String(reg.os).trim();
+
+  apiCallDelete(sheet, _id, os).then(r => {
+    if (r && r.ok) {
+      showSyncMsg('☁️ Exclusão sincronizada no servidor!');
+    } else {
+      showSyncMsg('⚠️ Removido localmente. Falha no servidor: ' + (r ? r.error : 'sem resposta'));
+    }
+  });
+}
+
+// Exclusão com fallback: tenta por _id, se falhar tenta por OS
+async function apiCallDelete(sheet, _id, os) {
+  if (!API_OK()) return null;
+  try {
+    // Tenta por _id primeiro
+    if (_id) {
+      const r1 = await apiCall({ action:'delete', sheet, _id });
+      if (r1 && r1.ok) return r1;
+    }
+    // Fallback: exclui pelo número de OS
+    const r2 = await apiCall({ action:'delete_by_os', sheet, os });
+    return r2;
+  } catch(e) {
+    console.warn('apiCallDelete error:', e);
+    return null;
   }
 }
 

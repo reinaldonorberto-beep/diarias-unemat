@@ -1429,63 +1429,121 @@ function preencheDL(){
 }
 
 function salvarC(){
-  const os=document.getElementById('ci-os').value.trim();
-  const mes=document.getElementById('ci-mes').value;
-  const via=document.getElementById('ci-via').value.trim();
-  const val=parseFloat(document.getElementById('ci-val').value)||0;
-  const sol=document.getElementById('ci-sol').value;
-  const vinc=document.getElementById('ci-vinc').value;
-  const atend=document.getElementById('ci-atend').value;
-  const mot=document.getElementById('ci-mot').value;
-  const sit=document.getElementById('ci-sit').value;
-  const desc=document.getElementById('ci-desc').value.trim();
-  const obs=document.getElementById('ci-obs').value.trim();
-  if(!os||!mes||!via||!val||!sol||!mot||!sit){alert('Preencha todos os campos obrigatórios (*).');return;}
-  const reg={os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs};
-  const idx=document.getElementById('c-edit-idx').value;
-  if(idx!=='') DC[parseInt(idx)]=reg; else DC.unshift(reg);
+  const os  = document.getElementById('ci-os').value.trim();
+  const mes  = document.getElementById('ci-mes').value;
+  const via  = document.getElementById('ci-via').value.trim();
+  const val  = parseFloat(document.getElementById('ci-val').value)||0;
+  const sol  = document.getElementById('ci-sol').value;
+  const vinc  = document.getElementById('ci-vinc').value;
+  const atend = document.getElementById('ci-atend').value;
+  const mot  = document.getElementById('ci-mot').value;
+  const sit  = document.getElementById('ci-sit').value;
+  const desc  = document.getElementById('ci-desc').value.trim();
+  const obs  = document.getElementById('ci-obs').value.trim();
+
+  // Campos obrigatórios
+  if(!os||!mes||!via||!val||!sol||!mot||!sit){
+    toast('⚠️ Preencha todos os campos obrigatórios (*)','azul',4000);
+    return;
+  }
+
+  const editIdx = document.getElementById('c-edit-idx').value;
+
+  // Verificar OS duplicada (somente em novo lançamento, não em edição)
+  if(editIdx === '') {
+    const allOS = [...DC, ...DP].map(r => r.os.toString().trim());
+    if(allOS.includes(os)) {
+      toast('❌ OS ' + os + ' já existe! Verifique antes de lançar.', 'azul', 5000);
+      document.getElementById('ci-os').style.borderColor = 'var(--verm)';
+      document.getElementById('ci-os').focus();
+      return;
+    }
+  }
+  document.getElementById('ci-os').style.borderColor = '';
+
+  const reg = {os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs};
+  if(editIdx!=='') DC[parseInt(editIdx)]=reg; else DC.unshift(reg);
   saveC();
   apiSave('campus', reg).then(r => {
     if(r && r.ok) showSyncMsg('☁️ Salvo no servidor!');
   });
-  toast('✅ Lançamento salvo! (Campus)','azul'); limparC(); showSec('campus','list');
+
+  // Aviso de sucesso, limpa campos e fica no formulário para novo lançamento
+  toast('✅ OS ' + os + ' lançada com sucesso! (Campus)', 'azul', 4000);
+  limparC();
 }
 
 function salvarP(){
-  const os=document.getElementById('pi-os').value.trim();
-  const mes=document.getElementById('pi-mes').value;
-  const via=document.getElementById('pi-via').value.trim();
-  const val=parseFloat(document.getElementById('pi-val').value)||0;
-  const sol=document.getElementById('pi-sol').value;
-  const vinc=document.getElementById('pi-vinc').value;
-  const atend=document.getElementById('pi-atend').value;
-  const mot=document.getElementById('pi-mot').value;
-  const sit=document.getElementById('pi-sit').value;
-  const desc=document.getElementById('pi-desc').value.trim();
-  const obs=document.getElementById('pi-obs').value.trim();
-  if(!os||!mes||!via||!val||!sol||!mot||!sit){alert('Preencha todos os campos obrigatórios (*).');return;}
-  const reg={os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs};
-  const idx=document.getElementById('p-edit-idx').value;
-  if(idx!=='') DP[parseInt(idx)]=reg; else DP.unshift(reg);
+  const os  = document.getElementById('pi-os').value.trim();
+  const mes  = document.getElementById('pi-mes').value;
+  const via  = document.getElementById('pi-via').value.trim();
+  const val  = parseFloat(document.getElementById('pi-val').value)||0;
+  const sol  = document.getElementById('pi-sol').value;
+  const vinc  = document.getElementById('pi-vinc').value;
+  const atend = document.getElementById('pi-atend').value;
+  const mot  = document.getElementById('pi-mot').value;
+  const sit  = document.getElementById('pi-sit').value;
+  const desc  = document.getElementById('pi-desc').value.trim();
+  const obs  = document.getElementById('pi-obs').value.trim();
+
+  // Campos obrigatórios
+  if(!os||!mes||!via||!val||!sol||!mot||!sit){
+    toast('⚠️ Preencha todos os campos obrigatórios (*)','verd',4000);
+    return;
+  }
+
+  const editIdx = document.getElementById('p-edit-idx').value;
+
+  // Verificar OS duplicada (somente em novo lançamento)
+  if(editIdx === '') {
+    const allOS = [...DC, ...DP].map(r => r.os.toString().trim());
+    if(allOS.includes(os)) {
+      toast('❌ OS ' + os + ' já existe! Verifique antes de lançar.', 'verd', 5000);
+      document.getElementById('pi-os').style.borderColor = 'var(--verm)';
+      document.getElementById('pi-os').focus();
+      return;
+    }
+  }
+  document.getElementById('pi-os').style.borderColor = '';
+
+  const reg = {os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs};
+  if(editIdx!=='') DP[parseInt(editIdx)]=reg; else DP.unshift(reg);
   saveP();
   apiSave('posgrad', reg).then(r => {
     if(r && r.ok) showSyncMsg('☁️ Salvo no servidor!');
   });
-  toast('✅ Lançamento salvo! (Pós-Graduação)','verd'); limparP(); showSec('posgrad','list');
+
+  // Aviso de sucesso, limpa campos e fica no formulário para novo lançamento
+  toast('✅ OS ' + os + ' lançada com sucesso! (Pós-Graduação)', 'verd', 4000);
+  limparP();
 }
 
 function limparC(){
-  ['ci-os','ci-via','ci-val','ci-desc','ci-obs'].forEach(id=>document.getElementById(id).value='');
-  ['ci-mes','ci-sol','ci-vinc','ci-atend','ci-mot','ci-sit'].forEach(id=>document.getElementById(id).value='');
+  ['ci-os','ci-via','ci-val','ci-desc','ci-obs'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.value='';el.style.borderColor='';}
+  });
+  ['ci-mes','ci-sol','ci-vinc','ci-atend','ci-mot','ci-sit'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
   document.getElementById('c-edit-idx').value='';
   document.getElementById('c-form-ttl').textContent='Novo Lançamento — Campus (PTA 2025)';
+  // Foco no campo OS para agilizar próximo lançamento
+  setTimeout(()=>{ const el=document.getElementById('ci-os'); if(el) el.focus(); }, 100);
 }
 
 function limparP(){
-  ['pi-os','pi-via','pi-val','pi-desc','pi-obs'].forEach(id=>document.getElementById(id).value='');
-  ['pi-mes','pi-sol','pi-vinc','pi-atend','pi-mot','pi-sit'].forEach(id=>document.getElementById(id).value='');
+  ['pi-os','pi-via','pi-val','pi-desc','pi-obs'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.value='';el.style.borderColor='';}
+  });
+  ['pi-mes','pi-sol','pi-vinc','pi-atend','pi-mot','pi-sit'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
   document.getElementById('p-edit-idx').value='';
   document.getElementById('p-form-ttl').textContent='Novo Lançamento — Pós-Graduação (PAOE 2211)';
+  // Foco no campo OS para agilizar próximo lançamento
+  setTimeout(()=>{ const el=document.getElementById('pi-os'); if(el) el.focus(); }, 100);
 }
 
 function editar(pref, idx){
@@ -1771,6 +1829,17 @@ function renderOrc(){
   buildOrcChart(ORC.campus,  'ch-orc-camp','rgba(26,58,92,0.85)','rgba(58,124,191,0.4)','#1a3a5c');
   buildOrcChart(ORC.posgrad, 'ch-orc-pos', 'rgba(26,92,58,0.85)','rgba(76,163,114,0.4)','#1a5c3a');
 }
+// ═══════════════════════════════════════
+//  TOAST — Notificação visual
+// ═══════════════════════════════════════
+function toast(msg, cor, dur=3500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (cor||'azul') + ' show';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), dur);
+}
+
 // ═══════════════════════════════════════
 //  CONFIGURAÇÕES
 // ═══════════════════════════════════════

@@ -769,12 +769,12 @@ function calcExec(orc) {
     'FACH':'FACH','FACEL':'FACEL','FACET':'FACET','FACIS':'FACIS','DPPF/DURA':'DPPF/DURA'
   };
   Object.keys(orc.campus).forEach(k => orc.campus[k].exec = 0);
-  DC.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
+  DC.filter(r=>r.situacao.includes('EXEC')).forEach(r=>{
     const k=mapC[r.setor_sol];
     if(k && orc.campus[k]) orc.campus[k].exec += r.valor;
   });
   Object.keys(orc.posgrad).forEach(k => orc.posgrad[k].exec = 0);
-  DP.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
+  DP.filter(r=>r.situacao.includes('EXEC')).forEach(r=>{
     const k=r.setor_sol;
     if(orc.posgrad[k]) orc.posgrad[k].exec += r.valor;
   });
@@ -994,8 +994,8 @@ function animNum(el, target, prefix='', suffix='', dur=800){
 
 function renderDash(){
   const all = [...DC, ...DP];
-  const vC = DC.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
-  const vP = DP.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
+  const vC = DC.filter(r=>r.situacao.includes('EXEC')).reduce((s,r)=>s+r.valor,0);
+  const vP = DP.filter(r=>r.situacao.includes('EXEC')).reduce((s,r)=>s+r.valor,0);
   const can = all.filter(r=>r.situacao.includes('CANC')).length;
 
   // Animated KPIs
@@ -1027,7 +1027,7 @@ function renderDash(){
 
   // ── CHART 1: Barras mensais (gradiente)
   const mG={};MESES.forEach(m=>mG[m]=0);
-  all.forEach(r=>{if(mG[r.mes]!==undefined&&!r.situacao.includes('CANC'))mG[r.mes]+=r.valor;});
+  all.forEach(r=>{if(mG[r.mes]!==undefined&&r.situacao.includes('EXEC'))mG[r.mes]+=r.valor;});
 
   mkChart('ch-mes-g',{
     type:'bar',
@@ -1084,8 +1084,8 @@ function renderDash(){
 
   // ── CHART 2: Stacked bar Campus vs Pós
   const mC={},mPo={};MESES.forEach(m=>{mC[m]=0;mPo[m]=0;});
-  DC.forEach(r=>{if(mC[r.mes]!==undefined&&!r.situacao.includes('CANC'))mC[r.mes]+=r.valor;});
-  DP.forEach(r=>{if(mPo[r.mes]!==undefined&&!r.situacao.includes('CANC'))mPo[r.mes]+=r.valor;});
+  DC.forEach(r=>{if(mC[r.mes]!==undefined&&r.situacao.includes('EXEC'))mC[r.mes]+=r.valor;});
+  DP.forEach(r=>{if(mPo[r.mes]!==undefined&&r.situacao.includes('EXEC'))mPo[r.mes]+=r.valor;});
 
   mkChart('ch-split',{
     type:'bar',
@@ -1138,16 +1138,17 @@ function renderDash(){
     }
   });
 
-  // ── CHART 3: Donut situação
+  // ── CHART 3: Donut situação — valores monetários (todas as situações)
   const sit={};
-  all.forEach(r=>{ const k=r.situacao||'–'; sit[k]=(sit[k]||0)+1; });
+  all.forEach(r=>{ const k=r.situacao||'–'; sit[k]=(sit[k]||0)+r.valor; });
   const sitEntries = Object.entries(sit).sort((a,b)=>b[1]-a[1]);
   const sitColors  = ['#4ca372','#b03a2e','#c08b2a','#6366f1','#22c55e','#aaa'];
+  const sitTotal   = sitEntries.reduce((s,[,v])=>s+v,0);
 
   mkChart('ch-sit-g',{
     type:'doughnut',
     data:{
-      labels: sitEntries.map(([k])=>k.replace('  ',' ')),
+      labels: sitEntries.map(([k])=>k.replace(/  /g,' ')),
       datasets:[{
         data: sitEntries.map(([,v])=>v),
         backgroundColor: sitColors,
@@ -1166,23 +1167,23 @@ function renderDash(){
         tooltip:{
           backgroundColor:'rgba(26,26,40,0.88)',
           padding:10, cornerRadius:8,
-          callbacks:{ label: ctx=>' '+ctx.label+': '+ctx.raw+' ('+Math.round(ctx.raw/all.length*100)+'%)' }
+          callbacks:{ label: ctx=>' '+ctx.label+': '+fmt(ctx.raw)+' ('+Math.round(ctx.raw/sitTotal*100)+'%)' }
         }
       }
     }
   });
 
-  // Legend
+  // Legend — exibe valor monetário
   document.getElementById('ch-sit-legend').innerHTML = sitEntries.map(([k,v],i)=>`
     <div class="dl-item">
       <div class="dl-dot" style="background:${sitColors[i]}"></div>
-      <span>${k.replace('  ',' ')}</span>
-      <span class="dl-val">${v}</span>
+      <span>${k.replace(/  /g,' ')}</span>
+      <span class="dl-val">${fmt(v)}</span>
     </div>`).join('');
 
   // ── CHART 4: Motivos (horizontal bar)
   const mot={};
-  all.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
+  all.filter(r=>r.situacao.includes('EXEC')).forEach(r=>{
     const k=(r.motivo||'–').replace(/  /g,' ');
     mot[k]=(mot[k]||0)+r.valor;
   });
@@ -1229,7 +1230,7 @@ function renderDash(){
 
   // ── CHART 5: Top setores campus
   const sc={};
-  DC.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{const k=r.setor_sol==='TRANSPORTE'?'SUP.TRANSP':r.setor_sol; sc[k]=(sc[k]||0)+r.valor;});
+  DC.filter(r=>r.situacao.includes('EXEC')).forEach(r=>{const k=r.setor_sol==='TRANSPORTE'?'SUP.TRANSP':r.setor_sol; sc[k]=(sc[k]||0)+r.valor;});
   const scE = Object.entries(sc).sort((a,b)=>b[1]-a[1]);
 
   mkChart('ch-set-c',{
@@ -1276,7 +1277,7 @@ function renderDash(){
 
   // ── CHART 6: Top programas pós
   const sp={};
-  DP.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{sp[r.setor_sol]=(sp[r.setor_sol]||0)+r.valor;});
+  DP.filter(r=>r.situacao.includes('EXEC')).forEach(r=>{sp[r.setor_sol]=(sp[r.setor_sol]||0)+r.valor;});
   const spE = Object.entries(sp).sort((a,b)=>b[1]-a[1]);
 
   mkChart('ch-set-p',{
@@ -1322,7 +1323,7 @@ function renderDash(){
   });
   // ── CHART: Setores Atendidos Campus — Quantidade de viagens
   const satQ={};
-  DC.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
+  DC.filter(r=>r.situacao.includes('EXEC')).forEach(r=>{
     const k=(r.setor_atend||'–').trim();
     satQ[k]=(satQ[k]||0)+1;
   });
@@ -1366,7 +1367,7 @@ function renderDash(){
 
   // ── CHART: Setores Atendidos Campus — Valor executado
   const satV={};
-  DC.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
+  DC.filter(r=>r.situacao.includes('EXEC')).forEach(r=>{
     const k=(r.setor_atend||'–').trim();
     satV[k]=(satV[k]||0)+r.valor;
   });
@@ -1415,7 +1416,7 @@ function buildSGCampus(){
   const cl=['','vd','','vd','','vd','','vd'];
   const keys=Object.keys(map);
   document.getElementById('sg-campus').innerHTML = keys.map((k,i)=>{
-    const v=DC.filter(r=>r.setor_sol===k).filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
+    const v=DC.filter(r=>r.setor_sol===k).filter(r=>r.situacao.includes('EXEC')).reduce((s,r)=>s+r.valor,0);
     const n=DC.filter(r=>r.setor_sol===k).length;
     return `<div class="sc ${cl[i]}"><div class="sc-l">${map[k]}</div><div class="sc-v">${fmt(v)}</div><div class="sc-s">${n} lançamentos</div></div>`;
   }).join('');
@@ -1425,7 +1426,7 @@ function buildSGPos(){
   const progs=['PPGCA','PPGEdu','PPGGeo','PPGL','Bionorte','PROFHISTÓRIA','PROFLetras'];
   const cl=['vd','','vd','','vd','','vd'];
   document.getElementById('sg-posgrad').innerHTML = progs.map((k,i)=>{
-    const v=DP.filter(r=>r.setor_sol===k).filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
+    const v=DP.filter(r=>r.setor_sol===k).filter(r=>r.situacao.includes('EXEC')).reduce((s,r)=>s+r.valor,0);
     const n=DP.filter(r=>r.setor_sol===k).length;
     return `<div class="sc ${cl[i]}"><div class="sc-l">${k}</div><div class="sc-v">${fmt(v)}</div><div class="sc-s">${n} lançamentos</div></div>`;
   }).join('');
@@ -1456,7 +1457,7 @@ function renderCampus(){
   });
 
   // KPIs campus
-  const vTotal=DC.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
+  const vTotal=DC.filter(r=>r.situacao.includes('EXEC')).reduce((s,r)=>s+r.valor,0);
   document.getElementById('ck-tot').textContent=DC.length;
   document.getElementById('ck-val').textContent=fmt(vTotal);
   document.getElementById('ck-can').textContent=DC.filter(r=>r.situacao.includes('CANC')).length;
@@ -1493,7 +1494,7 @@ function renderPos(){
     return pSortA?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));
   });
 
-  const vTotal=DP.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
+  const vTotal=DP.filter(r=>r.situacao.includes('EXEC')).reduce((s,r)=>s+r.valor,0);
   document.getElementById('pk-tot').textContent=DP.length;
   document.getElementById('pk-val').textContent=fmt(vTotal);
   document.getElementById('pk-can').textContent=DP.filter(r=>r.situacao.includes('CANC')).length;
@@ -1511,7 +1512,7 @@ function sortP(k){ if(pSortK===k)pSortA=!pSortA;else{pSortK=k;pSortA=true;} pPag
 function buildTable(prefix, filt, page, allData, tbodyId, pagId, infoId){
   const start=(page-1)*PG;
   const pageD=filt.slice(start,start+PG);
-  const vFilt=filt.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
+  const vFilt=filt.filter(r=>r.situacao.includes('EXEC')).reduce((s,r)=>s+r.valor,0);
 
   document.getElementById(infoId).innerHTML=`<strong>${filt.length}</strong> de <strong>${allData.length}</strong> lançamentos · Valor filtrado: <strong style="color:var(--${prefix==='c'?'azul':'verde'})">${fmt(vFilt)}</strong>`;
 
@@ -2041,7 +2042,7 @@ function printFiltro(pref) {
   }
 
   const totalValor = filtrado
-    .filter(r => !r.situacao.includes('CANC'))
+    .filter(r => r.situacao.includes('EXEC'))
     .reduce((s,r) => s + r.valor, 0);
 
   const agora = new Date().toLocaleDateString('pt-BR', {

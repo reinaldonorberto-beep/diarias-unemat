@@ -1,116 +1,9 @@
-
-// ═══════════════════════════════════════
-//  IMPRESSÃO
-// ═══════════════════════════════════════
-function printFiltro(pref) {
-  const isCampus = pref === 'c';
-  const filtrado = isCampus ? cFilt : pFilt;
-  const titulo   = isCampus ? 'UNEMAT Cáceres — Diárias Campus (PTA)' : 'UNEMAT Cáceres — Diárias Pós-Graduação';
-  const filtros  = [];
-  if(isCampus){
-    const mes=document.getElementById('cf-mes').value, set=document.getElementById('cf-set').value,
-          sit=document.getElementById('cf-sit').value, mot=document.getElementById('cf-mot').value,
-          bus=document.getElementById('cf-bus').value;
-    if(mes) filtros.push('Mês: '+mes); if(set) filtros.push('Setor: '+set);
-    if(sit) filtros.push('Situação: '+sit); if(mot) filtros.push('Motivo: '+mot.replace(/  /g,' '));
-    if(bus) filtros.push('Busca: "'+bus+'"');
-  } else {
-    const mes=document.getElementById('pf-mes').value, set=document.getElementById('pf-set').value,
-          sit=document.getElementById('pf-sit').value, mot=document.getElementById('pf-mot').value,
-          bus=document.getElementById('pf-bus').value;
-    if(mes) filtros.push('Mês: '+mes); if(set) filtros.push('Programa: '+set);
-    if(sit) filtros.push('Situação: '+sit); if(mot) filtros.push('Motivo: '+mot.replace(/  /g,' '));
-    if(bus) filtros.push('Busca: "'+bus+'"');
-  }
-  const totalValor = filtrado.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
-  const agora = new Date().toLocaleString('pt-BR');
-  const linhas = filtrado.map((r,i)=>{
-    const sitCor = r.situacao.includes('EXEC')?'#1a5c3a':r.situacao.includes('CANC')?'#b03a2e':'#c08b2a';
-    return '<tr style="background:'+(i%2===0?'#fff':'#f7f9fc')+'"><td>'+r.os+'</td><td>'+r.mes+'</td><td>'+r.viajante+'</td><td>'+r.setor_sol+'</td><td>'+r.setor_atend+'</td><td style="font-size:10px;max-width:200px;word-wrap:break-word">'+r.descricao+'</td><td>'+(r.motivo||'').replace(/  /g,' ')+'</td><td style="text-align:right;font-weight:700;color:#1a3a5c">'+fmt(r.valor)+'</td><td style="color:'+sitCor+';font-weight:700">'+r.situacao.replace(/  /g,' ')+'</td></tr>';
-  }).join('');
-  const html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>'+titulo+'</title>'
-    +'<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:11px;color:#1a1a2e;padding:16px}'
-    +'.header{margin-bottom:12px}.header h1{font-size:15px;color:#1a3a5c;margin-bottom:3px}.sub{font-size:10px;color:#666}'
-    +'.filtros{background:#f0f5ff;border:1px solid #d0d9e8;border-radius:6px;padding:7px 12px;margin-bottom:10px;font-size:10.5px;color:#1a3a5c}'
-    +'.resumo{display:flex;gap:20px;margin-bottom:12px}.resumo-item{background:#f7f9fc;border:1px solid #d0d9e8;border-radius:6px;padding:7px 14px}'
-    +'.lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#666}.val{font-size:14px;font-weight:700;color:#1a3a5c}'
-    +'table{width:100%;border-collapse:collapse;font-size:10.5px}thead th{background:#1a3a5c;color:#fff;padding:7px 8px;text-align:left;font-size:9.5px;text-transform:uppercase}'
-    +'tbody td{padding:6px 8px;border-bottom:1px solid #e8ecf0;vertical-align:top}tfoot td{padding:8px;background:#1a3a5c;color:#fff;font-weight:700}'
-    +'.footer{margin-top:12px;font-size:9px;color:#999;text-align:right}'
-    +'@media print{body{padding:8px}@page{margin:1.2cm;size:A4 landscape}}'
-    +'</style></head><body>'
-    +'<div class="header"><h1>'+titulo+'</h1><div class="sub">UNEMAT Campus de Cáceres · DURA/DPPF · '+agora+'</div></div>'
-    +(filtros.length?'<div class="filtros"><strong>Filtros:</strong> '+filtros.join(' | ')+'</div>':'')
-    +'<div class="resumo"><div class="resumo-item"><div class="lbl">Registros</div><div class="val">'+filtrado.length+'</div></div>'
-    +'<div class="resumo-item"><div class="lbl">Valor executado</div><div class="val">'+fmt(totalValor)+'</div></div>'
-    +'<div class="resumo-item"><div class="lbl">Cancelados</div><div class="val">'+filtrado.filter(r=>r.situacao.includes('CANC')).length+'</div></div></div>'
-    +'<table><thead><tr><th>OS</th><th>Mês</th><th>Viajante</th><th>Setor Sol.</th><th>Setor Atend.</th><th>Descrição</th><th>Motivo</th><th>Valor</th><th>Situação</th></tr></thead>'
-    +'<tbody>'+linhas+'</tbody>'
-    +'<tfoot><tr><td colspan="7">TOTAL ('+filtrado.length+' registros)</td><td style="text-align:right">'+fmt(totalValor)+'</td><td></td></tr></tfoot></table>'
-    +'<div class="footer">'+agora+'</div></body></html>';
-  const w = window.open('','_blank','width=1100,height=750');
-  w.document.write(html); w.document.close(); w.focus();
-  setTimeout(()=>w.print(),400);
-}
-// ═══════════════════════════════════════
-//  CONFIGURAÇÕES
-// ═══════════════════════════════════════
-function openConfig() {
-  const cfg = getSB();
-  document.getElementById('cfg-url').value = cfg.url || '';
-  document.getElementById('cfg-key').value = cfg.key || '';
-  document.getElementById('cfg-status').textContent = '';
-  document.getElementById('cfg-modal').style.display   = 'block';
-  document.getElementById('cfg-overlay').style.display = 'block';
-}
-function closeConfig() {
-  document.getElementById('cfg-modal').style.display   = 'none';
-  document.getElementById('cfg-overlay').style.display = 'none';
-}
-async function cfgSaveUrl() {
-  const url = document.getElementById('cfg-url').value.trim();
-  const key = document.getElementById('cfg-key').value.trim();
-  if (!url || !url.includes('supabase')) {
-    document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verm)">⚠️ URL inválida. Deve conter "supabase.co"</span>'; return;
-  }
-  if (!key || key.length < 20) {
-    document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verm)">⚠️ Chave API inválida</span>'; return;
-  }
-  saveSB({ url, key });
-  document.getElementById('cfg-status').textContent = '⏳ Testando conexão...';
-  const r = await sbFetch('campus', 'GET', null, { select:'count', limit:1 });
-  document.getElementById('cfg-status').innerHTML = r !== null
-    ? '<span style="color:var(--verde)">✅ Conexão OK! Configuração salva.</span>'
-    : '<span style="color:var(--verm)">❌ Falha na conexão. Verifique a URL e a chave.</span>';
-}
-async function cfgSyncNow() {
-  document.getElementById('cfg-status').textContent = '⏳ Buscando dados...';
-  const ok = await syncFromServer(false);
-  document.getElementById('cfg-status').innerHTML = ok
-    ? '<span style="color:var(--verde)">✅ ' + (DC.length+DP.length) + ' registros carregados!</span>'
-    : '<span style="color:var(--verm)">❌ Erro. Verifique a configuração.</span>';
-}
-async function cfgUploadAll() {
-  if (!confirm('Isso vai ENVIAR todos os dados locais para o Supabase.\nRegistros com mesma OS serão atualizados.\n\nConfirma?')) return;
-  document.getElementById('cfg-status').textContent = '⏳ Enviando Campus...';
-  const r1 = await apiBulk('campus', DC);
-  document.getElementById('cfg-status').textContent = '⏳ Enviando Pós-Graduação...';
-  const r2 = await apiBulk('posgrad', DP);
-  if (r1 && r1.ok && r2 && r2.ok) {
-    document.getElementById('cfg-status').innerHTML =
-      '<span style="color:var(--verde)">✅ Carga completa! Campus: ' + r1.count + ', Pós: ' + r2.count + '</span>';
-    toast('✅ Dados enviados ao Supabase!', 'azul', 4000);
-  } else {
-    document.getElementById('cfg-status').innerHTML =
-      '<span style="color:var(--verm)">❌ Erro na carga. Verifique a configuração.</span>';
-  }
-}
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UNEMAT Cáceres — Sistema de Diárias 2025</title>
+<title>UNEMAT Cáceres — Sistema de Diárias 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -366,7 +259,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
   <div class="hdr-brand">
     <div class="hdr-logo">UNE<br>MAT</div>
     <div>
-      <div class="hdr-t1">Sistema de Diárias 2025</div>
+      <div class="hdr-t1">Sistema de Diárias 2026</div>
       <div class="hdr-t2">UNEMAT · Campus de Cáceres · DURA / DPPF</div>
     </div>
   </div>
@@ -375,6 +268,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
     <button class="nb"     onclick="showMain('campus')">🏛️ Campus</button>
     <button class="nb"     onclick="showMain('posgrad')">🎓 Pós-Graduação</button>
     <button class="nb"     onclick="showMain('orcamento')">💰 Orçamento</button>
+    <button class="nb" onclick="openConfig()" title="Configurações e sincronização">⚙️</button>
   </div>
 </div>
 
@@ -445,7 +339,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
   <div id="campus-list">
     <div class="kpi-row" style="grid-template-columns:repeat(4,1fr)">
       <div class="kpi"><div class="kpi-l">Lançamentos</div><div class="kpi-v" id="ck-tot">–</div><div class="kpi-s">registros campus</div></div>
-      <div class="kpi o"><div class="kpi-l">Valor Total</div><div class="kpi-v" id="ck-val">–</div><div class="kpi-s">PTA 2025</div></div>
+      <div class="kpi o"><div class="kpi-l">Valor Total</div><div class="kpi-v" id="ck-val">–</div><div class="kpi-s">PTA 2026</div></div>
       <div class="kpi r"><div class="kpi-l">Canceladas</div><div class="kpi-v" id="ck-can">–</div><div class="kpi-s">lançamentos cancelados</div></div>
       <div class="kpi s"><div class="kpi-l">Servidores</div><div class="kpi-v" id="ck-srv">–</div><div class="kpi-s">viajantes únicos</div></div>
     </div>
@@ -463,7 +357,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
       <div class="fg"><label>Situação</label><select id="cf-sit" onchange="renderCampus()"><option value="">Todas</option><option>EXECUTADA</option><option>CANCELADA</option><option>REPASSE  EXTERNO</option></select></div>
       <div class="fg"><label>Motivo</label><select id="cf-mot" onchange="renderCampus()"><option value="">Todos</option><option>PÓS GRADUAÇÃO</option><option>EVENTO  ACADÊMICO</option><option>CENTROS/ PESQUISA/ EXTENSÃO</option><option>GESTÃO/ CAMPUS</option><option>GESTÃO/ FACULDADES</option><option>CAPACITAÇÃO</option><option>AULA  CAMPO</option><option>ESTÁGIO</option><option>EVENTO  CULTURAL</option><option>EVENTO  ESPORTIVO</option></select></div>
       <div class="fg"><label>Busca</label><input type="text" id="cf-bus" placeholder="OS / Viajante / Descrição..." style="width:200px" oninput="renderCampus()"></div>
-      <div class="fg" style="justify-content:flex-end"><label>&nbsp;</label><button class="btn bo" onclick="clearF('c')">✕ Limpar</button></div>
+      <div class="fg" style="justify-content:flex-end"><label>&nbsp;</label><div style="display:flex;gap:8px"><button class="btn bo" onclick="clearF('c')">✕ Limpar</button><button class="btn bp" onclick="printFiltro('c')" title="Imprimir resultado filtrado">🖨️ Imprimir</button></div></div>
     </div>
     <div class="tbl-info" id="c-info"></div>
     <div class="tw">
@@ -489,7 +383,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
   <!-- FORM CAMPUS -->
   <div id="campus-novo" style="display:none">
     <div class="fwrap">
-      <div class="fttl azul" id="c-form-ttl">Novo Lançamento — Campus (PTA 2025)</div>
+      <div class="fttl azul" id="c-form-ttl">Novo Lançamento — Campus (PTA 2026)</div>
       <div class="fsub">Setores: SUP. Transportes, FACAB, FACISA, FACH, FACEL, FACET, FACIS, DPPF/DURA, Capacitação Técnicos</div>
       <input type="hidden" id="c-edit-idx">
       <div class="ff2">
@@ -593,7 +487,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
       <div class="fg"><label>Situação</label><select id="pf-sit" onchange="renderPos()"><option value="">Todas</option><option>EXECUTADA</option><option>CANCELADA</option><option>REPASSE  EXTERNO</option></select></div>
       <div class="fg"><label>Motivo</label><select id="pf-mot" onchange="renderPos()"><option value="">Todos</option><option>PÓS GRADUAÇÃO</option><option>EVENTO  ACADÊMICO</option><option>CENTROS/ PESQUISA/ EXTENSÃO</option><option>AULA  CAMPO</option><option>CAPACITAÇÃO</option></select></div>
       <div class="fg"><label>Busca</label><input type="text" id="pf-bus" placeholder="OS / Viajante / Descrição..." style="width:200px" oninput="renderPos()"></div>
-      <div class="fg" style="justify-content:flex-end"><label>&nbsp;</label><button class="btn bog" onclick="clearF('p')">✕ Limpar</button></div>
+      <div class="fg" style="justify-content:flex-end"><label>&nbsp;</label><div style="display:flex;gap:8px"><button class="btn bog" onclick="clearF('p')">✕ Limpar</button><button class="btn bg" onclick="printFiltro('p')" title="Imprimir resultado filtrado">🖨️ Imprimir</button></div></div>
     </div>
     <div class="tbl-info" id="p-info"></div>
     <div class="tw">
@@ -695,7 +589,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
   <div id="orc-visao">
     <div class="g2">
       <div class="card">
-        <div class="ch">Campus — PTA 2025</div>
+        <div class="ch">Campus — PTA 2026</div>
         <table class="ot azul" id="ot-campus"></table>
       </div>
       <div class="card">
@@ -729,10 +623,9 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
   <div id="orc-editar" style="display:none">
     <div class="g2">
 
-      <!-- Campus -->
       <div class="card">
         <div class="ch" style="display:flex;justify-content:space-between;align-items:center">
-          <span>Campus — Previsão (PTA 2025)</span>
+          <span>Campus — Previsão (PTA 2026)</span>
           <button class="btn bp" style="padding:5px 14px;font-size:12px" onclick="saveOrcForm('campus')">💾 Salvar</button>
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:13px">
@@ -747,7 +640,6 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
         </table>
       </div>
 
-      <!-- Pós-Graduação -->
       <div class="card">
         <div class="ch vd" style="display:flex;justify-content:space-between;align-items:center">
           <span>Pós-Graduação — Previsão (PAOE 2211)</span>
@@ -767,7 +659,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
 
     </div>
     <div style="margin-top:14px;padding:12px 16px;background:var(--azul-p);border-radius:10px;font-size:12.5px;color:var(--azul-m);line-height:1.6">
-      ℹ️ <strong>Como funciona:</strong> Digite o valor previsto para cada setor. O <strong>Executado</strong> é calculado automaticamente a partir dos lançamentos (cancelados excluídos). O <strong>Saldo</strong> = Previsto − Executado, atualizado em tempo real. Clique em <strong>💾 Salvar</strong> para confirmar e atualizar os gráficos.
+      ℹ️ <strong>Como funciona:</strong> Digite o valor previsto para cada setor. O <strong>Executado</strong> é calculado automaticamente dos lançamentos (cancelados excluídos). O <strong>Saldo</strong> = Previsto − Executado, atualizado em tempo real. Clique em <strong>💾 Salvar</strong> para confirmar e atualizar os gráficos.
     </div>
   </div>
 
@@ -777,42 +669,34 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
 
 <!-- ══ MODAL CONFIGURAÇÕES SUPABASE ══ -->
 <div id="cfg-overlay" onclick="closeConfig()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:800"></div>
-<div id="cfg-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:801;background:#fff;border-radius:16px;padding:28px 32px;width:520px;max-width:95vw;box-shadow:0 16px 48px rgba(0,0,0,.25)">
+<div id="cfg-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:801;background:#fff;border-radius:16px;padding:28px 32px;width:460px;max-width:95vw;box-shadow:0 16px 48px rgba(0,0,0,.25)">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--azul)">⚙️ Configurações — Supabase</div>
+    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--azul)">⚙️ Configurações</div>
     <button onclick="closeConfig()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--cinza-m)">✕</button>
   </div>
 
-  <div style="margin-bottom:14px">
-    <label style="font-size:11px;font-weight:700;color:var(--cinza-m);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">URL do Projeto Supabase</label>
-    <input id="cfg-url" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co"
-      style="width:100%;border:1.5px solid var(--borda);border-radius:9px;padding:9px 12px;font-size:12.5px;font-family:'IBM Plex Sans',sans-serif;outline:none"
-      onfocus="this.style.borderColor='var(--azul-c)'" onblur="this.style.borderColor='var(--borda)'">
-  </div>
-
-  <div style="margin-bottom:18px">
-    <label style="font-size:11px;font-weight:700;color:var(--cinza-m);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Chave API (anon/public)</label>
-    <input id="cfg-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-      style="width:100%;border:1.5px solid var(--borda);border-radius:9px;padding:9px 12px;font-size:12.5px;font-family:'IBM Plex Sans',sans-serif;outline:none"
-      onfocus="this.style.borderColor='var(--azul-c)'" onblur="this.style.borderColor='var(--borda)'">
-    <div style="font-size:11px;color:var(--cinza-l);margin-top:5px">Encontre em: Supabase → Settings → API → Project API keys → anon public</div>
+  <div style="background:var(--azul-p);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:12.5px;color:var(--azul-m);line-height:1.6">
+    🔗 Conectado ao <strong>Supabase</strong> — banco de dados na nuvem.<br>
+    Os dados são sincronizados automaticamente entre todos os PCs.
   </div>
 
   <div style="display:flex;flex-direction:column;gap:10px">
-    <button onclick="cfgSaveUrl()" class="btn bp" style="width:100%;justify-content:center">💾 Salvar e Testar Conexão</button>
-    <button onclick="cfgSyncNow()" class="btn bo" style="width:100%;justify-content:center">🔄 Sincronizar — Buscar dados do servidor</button>
-    <button onclick="cfgUploadAll()" class="btn bo" style="width:100%;justify-content:center;border-color:var(--ouro);color:var(--ouro)">⬆️ Carga Inicial — Enviar TODOS os dados ao servidor</button>
+    <button onclick="cfgSyncNow()" class="btn bp" style="width:100%;justify-content:center;padding:10px">
+      🔄 Sincronizar — Buscar dados atualizados
+    </button>
+    <button onclick="cfgUploadAll()" class="btn bo" style="width:100%;justify-content:center;padding:10px;border-color:var(--ouro);color:var(--ouro)">
+      ⬆️ Carga Inicial — Enviar todos os dados ao Supabase
+    </button>
   </div>
 
   <div id="cfg-status" style="margin-top:14px;font-size:12.5px;color:var(--cinza-m);min-height:20px;text-align:center"></div>
 
   <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--borda);font-size:11px;color:var(--cinza-l);line-height:1.6">
-    <strong>Como obter as credenciais:</strong><br>
-    1. Acesse <strong>supabase.com</strong> → seu projeto<br>
-    2. Menu lateral: <strong>Settings → API</strong><br>
-    3. Copie a <strong>Project URL</strong> e a chave <strong>anon public</strong>
+    <strong>Sincronizar:</strong> busca os dados mais recentes do banco.<br>
+    <strong>Carga Inicial:</strong> use apenas uma vez para enviar dados existentes ao Supabase.
   </div>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
 // ═══════════════════════════════════════
@@ -886,40 +770,21 @@ let ORC = {}; // inicializado após DC e DP
 const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
 
 // ═══════════════════════════════════════
-//  BANCO DE DADOS — Supabase
+//  SUPABASE API
 // ═══════════════════════════════════════
-const SB_DEFAULT = {
-  url: 'https://xwzianpzffhbppcqwhhd.supabase.co',
-  key: 'sb_publishable_gKWmcOuPjSEGWKa-Fr3pag_8e9BLOLr'
-};
-
-function getSB() {
-  try {
-    const s = localStorage.getItem('sb_config');
-    if (s) {
-      const saved = JSON.parse(s);
-      // Usa credenciais salvas apenas se forem válidas e diferentes do padrão
-      if (saved.url && saved.url.includes('supabase') && saved.key && saved.key.length > 20)
-        return saved;
-    }
-  } catch(e) {}
-  return SB_DEFAULT; // sempre cai no padrão embutido
-}
-function saveSB(cfg) { localStorage.setItem('sb_config', JSON.stringify(cfg)); }
-function SB_OK() { const c = getSB(); return !!(c.url && c.key && c.url.includes('supabase')); }
+const SB_URL = 'https://xwzianpzffhbppcqwhhd.supabase.co';
+const SB_KEY = 'sb_publishable_gKWmcOuPjSEGWKa-Fr3pag_8e9BLOLr';
 
 // Chamada REST ao Supabase
 async function sbFetch(table, method, body, params) {
-  const { url, key } = getSB();
-  if (!url || !key) return null;
-  let endpoint = url.replace(/\/$/, '') + '/rest/v1/' + table;
+  let endpoint = SB_URL + '/rest/v1/' + table;
   if (params) endpoint += '?' + new URLSearchParams(params).toString();
   try {
     const opts = {
       method,
       headers: {
-        'apikey': key,
-        'Authorization': 'Bearer ' + key,
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY,
         'Content-Type': 'application/json',
         'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal',
       }
@@ -932,51 +797,50 @@ async function sbFetch(table, method, body, params) {
   } catch(e) { console.warn('Supabase error:', e); return null; }
 }
 
-// Mapear linha do Supabase → formato interno
-function sbToReg(r) {
-  return {
-    os: r.os_num, mes: r.mes, viajante: r.viajante,
-    setor_sol: r.setor_sol, setor_vinc: r.setor_vinc, setor_atend: r.setor_atend,
-    descricao: r.descricao, valor: parseFloat(r.valor)||0,
-    motivo: r.motivo, situacao: r.situacao, obs: r.obs||'', _id: r.id,
-  };
-}
-
-// Mapear registro interno → linha do Supabase
+// Registro interno → linha Supabase
 function regToSb(r) {
   return {
     os_num: String(r.os), mes: r.mes, viajante: r.viajante,
-    setor_sol: r.setor_sol, setor_vinc: r.setor_vinc||'', setor_atend: r.setor_atend||'',
-    descricao: r.descricao||'', valor: parseFloat(r.valor)||0,
-    motivo: r.motivo||'', situacao: r.situacao||'', obs: r.obs||'',
+    setor_sol: r.setor_sol||'', setor_vinc: r.setor_vinc||'',
+    setor_atend: r.setor_atend||'', descricao: r.descricao||'',
+    valor: parseFloat(r.valor)||0, motivo: r.motivo||'',
+    situacao: r.situacao||'', obs: r.obs||''
   };
 }
 
-// Buscar todos os registros
-async function apiGet(table) {
-  if (!SB_OK()) return null;
-  const r = await sbFetch(table, 'GET', null, { select:'*', order:'created_at.asc', limit:5000 });
-  return Array.isArray(r) ? r : null;
+// Linha Supabase → registro interno
+function sbToReg(r) {
+  return {
+    os: r.os_num, mes: r.mes, viajante: r.viajante,
+    setor_sol: r.setor_sol, setor_vinc: r.setor_vinc,
+    setor_atend: r.setor_atend, descricao: r.descricao,
+    valor: parseFloat(r.valor)||0, motivo: r.motivo,
+    situacao: r.situacao, obs: r.obs||''
+  };
 }
 
-// Salvar / atualizar (upsert por os_num)
+// Buscar dados
+async function apiGet(table) {
+  const r = await sbFetch(table, 'GET', null,
+    { select:'*', order:'created_at.asc', limit:5000 });
+  return Array.isArray(r) ? r.map(sbToReg) : null;
+}
+
+// Salvar/atualizar (upsert por os_num)
 async function apiSave(table, record) {
-  if (!SB_OK()) return null;
   const r = await sbFetch(table, 'POST', regToSb(record), null);
   return r !== null ? { ok:true } : { ok:false };
 }
 
-// Excluir por número de OS
+// Excluir pelo número de OS
 async function apiDelete(table, record) {
-  if (!SB_OK()) return null;
-  const os = String((record && record.os) ? record.os : record).trim();
+  const os = String(record.os||record).trim();
   const r = await sbFetch(table, 'DELETE', null, { os_num: 'eq.'+os });
   return r !== null ? { ok:true } : { ok:false };
 }
 
-// Carga em lote (upsert em chunks)
+// Carga em lote (upsert em chunks de 100)
 async function apiBulk(table, records) {
-  if (!SB_OK()) return null;
   const CHUNK = 100;
   let total = 0;
   for (let i = 0; i < records.length; i += CHUNK) {
@@ -989,25 +853,27 @@ async function apiBulk(table, records) {
   return { ok:true, count:total };
 }
 
-// Sincronizar do servidor
+// Sincronizar do Supabase (busca dados mais recentes)
 async function syncFromServer(silent) {
-  if (!SB_OK()) { if (!silent) showSyncMsg('⚠️ Supabase não configurado'); return false; }
-  if (!silent) showSyncMsg('⏳ Sincronizando...');
-  const [dc, dp] = await Promise.all([apiGet('campus'), apiGet('posgrad')]);
-  if (dc) { DC = dc.map(sbToReg); saveC(); }
-  if (dp) { DP = dp.map(sbToReg); saveP(); }
-  if (dc || dp) {
-    ORC = calcExec(loadORC());
-    cFilt=[...DC]; pFilt=[...DP];
-    preencheDL(); renderDash();
-    if (!silent) showSyncMsg('✅ ' + (DC.length+DP.length) + ' registros sincronizados!');
-    return true;
+  if (!silent) showSyncMsg('⏳ Sincronizando com Supabase...');
+  try {
+    const [dc, dp] = await Promise.all([apiGet('campus'), apiGet('posgrad')]);
+    if (dc) { DC = dc; saveC(); }
+    if (dp) { DP = dp; saveP(); }
+    if (dc || dp) {
+      ORC = calcExec(loadORC());
+      cFilt=[...DC]; pFilt=[...DP];
+      preencheDL(); renderDash();
+      if (!silent) showSyncMsg('✅ ' + (DC.length+DP.length) + ' registros sincronizados!');
+    } else {
+      if (!silent) showSyncMsg('⚠️ Sem dados no Supabase ainda');
+    }
+  } catch(e) {
+    if (!silent) showSyncMsg('⚠️ Erro ao conectar ao Supabase');
   }
-  if (!silent) showSyncMsg('⚠️ Sem dados no servidor');
-  return false;
 }
 
-// Notificação no topo
+// Notificação no topo da tela
 function showSyncMsg(msg) {
   let el = document.getElementById('sync-msg');
   if (!el) {
@@ -1022,155 +888,6 @@ function showSyncMsg(msg) {
   clearTimeout(el._t);
   el._t = setTimeout(() => el.style.opacity='0', 3500);
 }
-
-// ═══════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════
-function toast(msg, cor, dur=3500) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast ' + (cor||'azul') + ' show';
-  clearTimeout(t._tid);
-  t._tid = setTimeout(() => t.classList.remove('show'), dur);
-}
-
-// ═══════════════════════════════════════
-//  MODAL DE CONFIGURAÇÕES
-// ═══════════════════════════════════════
-function openConfig() {
-  const cfg = getSB();
-  document.getElementById('cfg-url').value = cfg.url || '';
-  document.getElementById('cfg-key').value = cfg.key || '';
-  document.getElementById('cfg-status').textContent = '';
-  document.getElementById('cfg-modal').style.display   = 'block';
-  document.getElementById('cfg-overlay').style.display = 'block';
-}
-function closeConfig() {
-  document.getElementById('cfg-modal').style.display   = 'none';
-  document.getElementById('cfg-overlay').style.display = 'none';
-}
-async function cfgSaveUrl() {
-  const url = document.getElementById('cfg-url').value.trim();
-  const key = document.getElementById('cfg-key').value.trim();
-  if (!url || !url.includes('supabase')) {
-    document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verm)">⚠️ URL inválida. Deve conter "supabase.co"</span>'; return;
-  }
-  if (!key || key.length < 20) {
-    document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verm)">⚠️ Chave API inválida</span>'; return;
-  }
-  saveSB({ url, key });
-  document.getElementById('cfg-status').textContent = '⏳ Testando conexão...';
-  const r = await sbFetch('campus', 'GET', null, { select:'count', limit:1 });
-  document.getElementById('cfg-status').innerHTML = r !== null
-    ? '<span style="color:var(--verde)">✅ Conexão OK! Configuração salva.</span>'
-    : '<span style="color:var(--verm)">❌ Falha na conexão. Verifique a URL e a chave.</span>';
-}
-async function cfgSyncNow() {
-  document.getElementById('cfg-status').textContent = '⏳ Buscando dados...';
-  const ok = await syncFromServer(false);
-  document.getElementById('cfg-status').innerHTML = ok
-    ? '<span style="color:var(--verde)">✅ ' + (DC.length+DP.length) + ' registros carregados!</span>'
-    : '<span style="color:var(--verm)">❌ Erro. Verifique a configuração.</span>';
-}
-async function cfgUploadAll() {
-  if (!confirm('Isso vai ENVIAR todos os dados locais para o Supabase.\nRegistros com mesma OS serão atualizados.\n\nConfirma?')) return;
-  document.getElementById('cfg-status').textContent = '⏳ Enviando Campus...';
-  const r1 = await apiBulk('campus', DC);
-  document.getElementById('cfg-status').textContent = '⏳ Enviando Pós-Graduação...';
-  const r2 = await apiBulk('posgrad', DP);
-  if (r1 && r1.ok && r2 && r2.ok) {
-    document.getElementById('cfg-status').innerHTML =
-      '<span style="color:var(--verde)">✅ Carga completa! Campus: ' + r1.count + ', Pós: ' + r2.count + '</span>';
-    toast('✅ Dados enviados ao Supabase!', 'azul', 4000);
-  } else {
-    document.getElementById('cfg-status').innerHTML =
-      '<span style="color:var(--verm)">❌ Erro na carga. Verifique a configuração.</span>';
-  }
-}
-
-// ═══════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════
-ORC = calcExec(loadORC());
-preencheDL();
-renderDash();
-syncFromServer(true); // auto-sync sempre (credenciais embutidas)
-</script>
-</body>
-</html>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// ═══════════════════════════════════════
-//  DADOS
-// ═══════════════════════════════════════
-const DADOS_CAMPUS_INIT  = 
-[];
-const DADOS_POS_INIT =
-[];
-
-// ── Valores previsto padrão (editável pelo usuário)
-const ORC_DEFAULT = {
-  campus: {
-    'SUP.TRANSP/DURA': {prev:70000},
-    'FACAB':           {prev:22025.67},
-    'FACISA':          {prev:14200.39},
-    'FACH':            {prev:12767.5},
-    'FACEL':           {prev:13055.22},
-    'FACET':           {prev:10878.59},
-    'FACIS':           {prev:23572.64},
-    'DPPF/DURA':       {prev:20000},
-    'Cap.Téc.':        {prev:10000}
-  },
-  posgrad: {
-    'PPGGeo':      {prev:20000},
-    'PPGEdu':      {prev:20000},
-    'PPGL':        {prev:20000},
-    'PROFHISTÓRIA':{prev:20000},
-    'PPGCA':       {prev:20000},
-    'PROFLetras':  {prev:10000},
-    'PPGMP':       {prev:0}
-  }
-};
-
-function loadORC() {
-  try {
-    const s = localStorage.getItem('orcamento2025');
-    if (s) return JSON.parse(s);
-  } catch(e){}
-  const o = { campus:{}, posgrad:{} };
-  Object.entries(ORC_DEFAULT.campus).forEach(([k,v])=>{ o.campus[k]={prev:v.prev}; });
-  Object.entries(ORC_DEFAULT.posgrad).forEach(([k,v])=>{ o.posgrad[k]={prev:v.prev}; });
-  return o;
-}
-
-function saveORC(orc) {
-  localStorage.setItem('orcamento2025', JSON.stringify(orc));
-}
-
-// Calcula executado dinamicamente (exclui cancelados)
-function calcExec(orc) {
-  const mapC = {
-    'TRANSPORTE':'SUP.TRANSP/DURA','FACAB':'FACAB','FACISA':'FACISA',
-    'FACH':'FACH','FACEL':'FACEL','FACET':'FACET','FACIS':'FACIS','DPPF/DURA':'DPPF/DURA'
-  };
-  Object.keys(orc.campus).forEach(k => orc.campus[k].exec = 0);
-  DC.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
-    const k=mapC[r.setor_sol];
-    if(k && orc.campus[k]) orc.campus[k].exec += r.valor;
-  });
-  Object.keys(orc.posgrad).forEach(k => orc.posgrad[k].exec = 0);
-  DP.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
-    const k=r.setor_sol;
-    if(orc.posgrad[k]) orc.posgrad[k].exec += r.valor;
-  });
-  return orc;
-}
-
-let ORC = calcExec(loadORC());
-
-const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
 
 // ═══════════════════════════════════════
 //  STATE
@@ -1744,87 +1461,127 @@ function preencheDL(){
 }
 
 function salvarC(){
-  const os   = document.getElementById('ci-os').value.trim();
+  const os  = document.getElementById('ci-os').value.trim();
   const mes  = document.getElementById('ci-mes').value;
   const via  = document.getElementById('ci-via').value.trim();
   const val  = parseFloat(document.getElementById('ci-val').value)||0;
   const sol  = document.getElementById('ci-sol').value;
-  const vinc = document.getElementById('ci-vinc').value;
-  const atend= document.getElementById('ci-atend').value;
+  const vinc  = document.getElementById('ci-vinc').value;
+  const atend = document.getElementById('ci-atend').value;
   const mot  = document.getElementById('ci-mot').value;
   const sit  = document.getElementById('ci-sit').value;
-  const desc = document.getElementById('ci-desc').value.trim();
+  const desc  = document.getElementById('ci-desc').value.trim();
   const obs  = document.getElementById('ci-obs').value.trim();
+
+  // Campos obrigatórios
   if(!os||!mes||!via||!val||!sol||!mot||!sit){
-    toast('⚠️ Preencha todos os campos obrigatórios (*)','azul',4000); return;
+    toast('⚠️ Preencha todos os campos obrigatórios (*)','azul',4000);
+    return;
   }
+
   const editIdx = document.getElementById('c-edit-idx').value;
+
+  // Verificar OS duplicada (somente em novo lançamento, não em edição)
   if(editIdx === '') {
-    const allOS = [...DC,...DP].map(r=>String(r.os).trim());
-    if(allOS.includes(os)){
-      toast('❌ OS '+os+' já existe!','azul',5000);
-      document.getElementById('ci-os').style.borderColor='var(--verm)';
-      document.getElementById('ci-os').focus(); return;
+    const allOS = [...DC, ...DP].map(r => r.os.toString().trim());
+    if(allOS.includes(os)) {
+      toast('❌ OS ' + os + ' já existe! Verifique antes de lançar.', 'azul', 5000);
+      document.getElementById('ci-os').style.borderColor = 'var(--verm)';
+      document.getElementById('ci-os').focus();
+      return;
     }
   }
-  document.getElementById('ci-os').style.borderColor='';
-  const reg={os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs};
+  document.getElementById('ci-os').style.borderColor = '';
+
+  const _id = editIdx !== '' ? (DC[parseInt(editIdx)]._id || '') : ('id_' + Date.now() + '_' + Math.random().toString(36).substr(2,6));
+  const reg = {os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs,_id};
   if(editIdx!=='') DC[parseInt(editIdx)]=reg; else DC.unshift(reg);
   saveC();
-  apiSave('campus', reg).then(r=>{ if(r&&r.ok) showSyncMsg('☁️ Salvo no Supabase!'); });
-  toast('✅ OS '+os+' lançada! (Campus)','azul',4000);
+  apiSave('campus', reg).then(r => {
+    if(r && r.ok) showSyncMsg('☁️ Salvo no Supabase!');
+    else showSyncMsg('⚠️ Falha ao salvar no Supabase');
+  });
+
+  // Aviso de sucesso, limpa campos e fica no formulário para novo lançamento
+  toast('✅ OS ' + os + ' lançada com sucesso! (Campus)', 'azul', 4000);
   limparC();
-  cFilt=[...DC];
+  cFilt = [...DC]; // atualiza filtro com novo registro
 }
 
 function salvarP(){
-  const os   = document.getElementById('pi-os').value.trim();
+  const os  = document.getElementById('pi-os').value.trim();
   const mes  = document.getElementById('pi-mes').value;
   const via  = document.getElementById('pi-via').value.trim();
   const val  = parseFloat(document.getElementById('pi-val').value)||0;
   const sol  = document.getElementById('pi-sol').value;
-  const vinc = document.getElementById('pi-vinc').value;
-  const atend= document.getElementById('pi-atend').value;
+  const vinc  = document.getElementById('pi-vinc').value;
+  const atend = document.getElementById('pi-atend').value;
   const mot  = document.getElementById('pi-mot').value;
   const sit  = document.getElementById('pi-sit').value;
-  const desc = document.getElementById('pi-desc').value.trim();
+  const desc  = document.getElementById('pi-desc').value.trim();
   const obs  = document.getElementById('pi-obs').value.trim();
+
+  // Campos obrigatórios
   if(!os||!mes||!via||!val||!sol||!mot||!sit){
-    toast('⚠️ Preencha todos os campos obrigatórios (*)','verd',4000); return;
+    toast('⚠️ Preencha todos os campos obrigatórios (*)','verd',4000);
+    return;
   }
+
   const editIdx = document.getElementById('p-edit-idx').value;
+
+  // Verificar OS duplicada (somente em novo lançamento)
   if(editIdx === '') {
-    const allOS = [...DC,...DP].map(r=>String(r.os).trim());
-    if(allOS.includes(os)){
-      toast('❌ OS '+os+' já existe!','verd',5000);
-      document.getElementById('pi-os').style.borderColor='var(--verm)';
-      document.getElementById('pi-os').focus(); return;
+    const allOS = [...DC, ...DP].map(r => r.os.toString().trim());
+    if(allOS.includes(os)) {
+      toast('❌ OS ' + os + ' já existe! Verifique antes de lançar.', 'verd', 5000);
+      document.getElementById('pi-os').style.borderColor = 'var(--verm)';
+      document.getElementById('pi-os').focus();
+      return;
     }
   }
-  document.getElementById('pi-os').style.borderColor='';
-  const reg={os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs};
+  document.getElementById('pi-os').style.borderColor = '';
+
+  const _id = editIdx !== '' ? (DP[parseInt(editIdx)]._id || '') : ('id_' + Date.now() + '_' + Math.random().toString(36).substr(2,6));
+  const reg = {os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs,_id};
   if(editIdx!=='') DP[parseInt(editIdx)]=reg; else DP.unshift(reg);
   saveP();
-  apiSave('posgrad', reg).then(r=>{ if(r&&r.ok) showSyncMsg('☁️ Salvo no Supabase!'); });
-  toast('✅ OS '+os+' lançada! (Pós-Grad)','verd',4000);
+  apiSave('posgrad', reg).then(r => {
+    if(r && r.ok) showSyncMsg('☁️ Salvo no Supabase!');
+    else showSyncMsg('⚠️ Falha ao salvar no Supabase');
+  });
+
+  // Aviso de sucesso, limpa campos e fica no formulário para novo lançamento
+  toast('✅ OS ' + os + ' lançada com sucesso! (Pós-Graduação)', 'verd', 4000);
   limparP();
-  pFilt=[...DP];
+  pFilt = [...DP]; // atualiza filtro com novo registro
 }
 
 function limparC(){
-  ['ci-os','ci-via','ci-val','ci-desc','ci-obs'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.style.borderColor='';}});
-  ['ci-mes','ci-sol','ci-vinc','ci-atend','ci-mot','ci-sit'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['ci-os','ci-via','ci-val','ci-desc','ci-obs'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.value='';el.style.borderColor='';}
+  });
+  ['ci-mes','ci-sol','ci-vinc','ci-atend','ci-mot','ci-sit'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
   document.getElementById('c-edit-idx').value='';
-  document.getElementById('c-form-ttl').textContent='Novo Lançamento — Campus (PTA)';
-  setTimeout(()=>{const el=document.getElementById('ci-os');if(el)el.focus();},100);
+  document.getElementById('c-form-ttl').textContent='Novo Lançamento — Campus (PTA 2025)';
+  // Foco no campo OS para agilizar próximo lançamento
+  setTimeout(()=>{ const el=document.getElementById('ci-os'); if(el) el.focus(); }, 100);
 }
 
 function limparP(){
-  ['pi-os','pi-via','pi-val','pi-desc','pi-obs'].forEach(id=>{const el=document.getElementById(id);if(el){el.value='';el.style.borderColor='';}});
-  ['pi-mes','pi-sol','pi-vinc','pi-atend','pi-mot','pi-sit'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['pi-os','pi-via','pi-val','pi-desc','pi-obs'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.value='';el.style.borderColor='';}
+  });
+  ['pi-mes','pi-sol','pi-vinc','pi-atend','pi-mot','pi-sit'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
   document.getElementById('p-edit-idx').value='';
-  document.getElementById('p-form-ttl').textContent='Novo Lançamento — Pós-Graduação (PAOE)';
-  setTimeout(()=>{const el=document.getElementById('pi-os');if(el)el.focus();},100);
+  document.getElementById('p-form-ttl').textContent='Novo Lançamento — Pós-Graduação (PAOE 2211)';
+  // Foco no campo OS para agilizar próximo lançamento
+  setTimeout(()=>{ const el=document.getElementById('pi-os'); if(el) el.focus(); }, 100);
 }
 
 function editar(pref, idx){
@@ -1865,21 +1622,45 @@ function editar(pref, idx){
 function excluir(pref, idx){
   const arr = pref==='c' ? DC : DP;
   const reg = arr[idx];
-  if(!confirm('Excluir OS '+reg.os+'?\nEsta ação não pode ser desfeita.')) return;
+  if(!confirm(`Excluir OS ${reg.os}?\nEsta ação não pode ser desfeita.`)) return;
+
   const sheet = pref==='c' ? 'campus' : 'posgrad';
   arr.splice(idx, 1);
+
   if(pref==='c'){ saveC(); renderCampus(); } else { saveP(); renderPos(); }
-  toast('🗑️ Removido localmente...', pref==='c'?'azul':'verd', 2000);
-  apiDelete(sheet, reg).then(r=>{
-    if(r&&r.ok) showSyncMsg('☁️ Excluído do Supabase!');
-    else showSyncMsg('⚠️ Removido local. Falha no servidor.');
+  toast('🗑️ Removido localmente. Sincronizando...', pref==='c'?'azul':'verd', 2500);
+
+  // Tenta excluir pelo _id; se não tiver, usa o número de OS como chave
+  const _id = reg._id || null;
+  const os  = String(reg.os).trim();
+
+  apiDelete(sheet, reg).then(r => {
+    showSyncMsg(r&&r.ok ? '☁️ Excluído do Supabase!' : '⚠️ Falha ao excluir no servidor');
   });
+}
+
+// Exclusão com fallback: tenta por _id, se falhar tenta por OS
+async function apiCallDelete(sheet, _id, os) {
+  if (!API_OK()) return null;
+  try {
+    // Tenta por _id primeiro
+    if (_id) {
+      const r1 = await apiCall({ action:'delete', sheet, _id });
+      if (r1 && r1.ok) return r1;
+    }
+    // Fallback: exclui pelo número de OS
+    const r2 = await apiCall({ action:'delete_by_os', sheet, os });
+    return r2;
+  } catch(e) {
+    console.warn('apiCallDelete error:', e);
+    return null;
+  }
 }
 
 // ═══════════════════════════════════════
 //  ORÇAMENTO
 // ═══════════════════════════════════════
-// ─── Orçamento subtabs
+// ─── Subtabs do orçamento
 function showOrcSec(sec) {
   document.getElementById('orc-visao').style.display  = sec==='visao'  ? 'block' : 'none';
   document.getElementById('orc-editar').style.display = sec==='editar' ? 'block' : 'none';
@@ -1889,7 +1670,7 @@ function showOrcSec(sec) {
   if (sec==='editar') renderOrcForms();
 }
 
-// ─── Render editable forms
+// ─── Formulários editáveis
 function renderOrcForms() {
   ORC = calcExec(loadORC());
   buildOrcForm('campus',  ORC.campus,  'orc-tbody-campus',  'orc-tfoot-campus');
@@ -1898,8 +1679,8 @@ function renderOrcForms() {
 
 function buildOrcForm(tipo, obj, tbodyId, tfootId) {
   const isC   = tipo === 'campus';
-  const cor   = isC ? 'var(--azul)'   : 'var(--verde)';
-  const corBg = isC ? '#f0f5ff'       : '#f0fff8';
+  const cor   = isC ? 'var(--azul)'  : 'var(--verde)';
+  const corBg = isC ? '#f0f5ff'      : '#f0fff8';
   let html = '', tP = 0, tE = 0;
   Object.entries(obj).forEach(([k, v]) => {
     const exec  = v.exec  || 0;
@@ -1917,7 +1698,7 @@ function buildOrcForm(tipo, obj, tbodyId, tfootId) {
                  background:${corBg};outline:none;transition:border-color .2s"
           onfocus="this.style.borderColor='${cor}'" onblur="this.style.borderColor='var(--borda)'">
       </td>
-      <td id="${sid}_exec" style="padding:9px 10px;text-align:right;font-weight:600;color:${cor}">${fmt(exec)}</td>
+      <td id="${sid}_exec"  style="padding:9px 10px;text-align:right;font-weight:600;color:${cor}">${fmt(exec)}</td>
       <td id="${sid}_saldo" style="padding:9px 10px;text-align:right;font-weight:700;color:${saldo>=0?'var(--verde)':'var(--verm)'}">
         ${fmt(Math.abs(saldo))} ${saldo>=0?'▲':'▼'}
       </td>
@@ -1953,9 +1734,7 @@ function recalcOrcRow(input, tipo, key) {
     sEl.textContent = fmt(Math.abs(saldo)) + ' ' + (saldo>=0?'▲':'▼');
     sEl.style.color = saldo>=0 ? 'var(--verde)' : 'var(--verm)';
   }
-  // Atualiza total
   const allPrev = Object.values(ORC[tipo]).reduce((s,v)=>s+(v.prev||0),0);
-  const allExec = Object.values(ORC[tipo]).reduce((s,v)=>s+(v.exec||0),0);
   const tEl = document.getElementById('orc-total-prev-'+tipo);
   if (tEl) tEl.textContent = fmt(allPrev);
 }
@@ -1970,7 +1749,7 @@ function saveOrcForm(tipo) {
   saveORC(orc);
   ORC = calcExec(orc);
   toast('✅ Previsão salva com sucesso!', tipo==='campus'?'azul':'verd');
-  renderOrc(); // atualiza gráficos
+  renderOrc();
 }
 
 function renderOrc(){
@@ -2055,7 +1834,7 @@ function renderOrc(){
   buildMensal(DC,'ot-mes-c','azul');
   buildMensal(DP,'ot-mes-p','verde');
 
-  // ── Gráficos Previsto vs Executado (barras agrupadas, labels acima)
+  // ── Previsto vs Executado — labels acima das barras
   function buildOrcChart(obj, id, corA, corB, labelColor){
     const entries = Object.entries(obj);
     const maxVal  = Math.max(...entries.map(([,v])=>Math.max(v.prev||0,v.exec||0)), 1);
@@ -2111,157 +1890,210 @@ function renderOrc(){
   buildOrcChart(ORC.posgrad, 'ch-orc-pos', 'rgba(26,92,58,0.85)','rgba(76,163,114,0.4)','#1a5c3a');
 }
 // ═══════════════════════════════════════
-//  SUPABASE API
+//  TOAST — Notificação visual
 // ═══════════════════════════════════════
-const SB_DEFAULT = {
-  url: 'https://xwzianpzffhbppcqwhhd.supabase.co',
-  key: 'sb_publishable_gKWmcOuPjSEGWKa-Fr3pag_8e9BLOLr'
-};
+function toast(msg, cor, dur=3500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (cor||'azul') + ' show';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), dur);
+}
 
-function getSB() {
+// ═══════════════════════════════════════
+//  IMPRESSÃO
+// ═══════════════════════════════════════
+function printFiltro(pref) {
+  const isCampus = pref === 'c';
+  const filtrado  = isCampus ? cFilt : pFilt;
+  const titulo    = isCampus
+    ? 'UNEMAT Cáceres — Diárias Campus (PTA)'
+    : 'UNEMAT Cáceres — Diárias Pós-Graduação';
+
+  // Lê os filtros ativos para exibir no cabeçalho
+  const filtros = [];
+  if (isCampus) {
+    const mes  = document.getElementById('cf-mes').value;
+    const set  = document.getElementById('cf-set').value;
+    const sit  = document.getElementById('cf-sit').value;
+    const mot  = document.getElementById('cf-mot').value;
+    const bus  = document.getElementById('cf-bus').value;
+    if (mes) filtros.push('Mês: ' + mes);
+    if (set) filtros.push('Setor: ' + set);
+    if (sit) filtros.push('Situação: ' + sit);
+    if (mot) filtros.push('Motivo: ' + mot.replace(/  /g,' '));
+    if (bus) filtros.push('Busca: "' + bus + '"');
+  } else {
+    const mes  = document.getElementById('pf-mes').value;
+    const set  = document.getElementById('pf-set').value;
+    const sit  = document.getElementById('pf-sit').value;
+    const mot  = document.getElementById('pf-mot').value;
+    const bus  = document.getElementById('pf-bus').value;
+    if (mes) filtros.push('Mês: ' + mes);
+    if (set) filtros.push('Programa: ' + set);
+    if (sit) filtros.push('Situação: ' + sit);
+    if (mot) filtros.push('Motivo: ' + mot.replace(/  /g,' '));
+    if (bus) filtros.push('Busca: "' + bus + '"');
+  }
+
+  const totalValor = filtrado
+    .filter(r => !r.situacao.includes('CANC'))
+    .reduce((s,r) => s + r.valor, 0);
+
+  const agora = new Date().toLocaleDateString('pt-BR', {
+    day:'2-digit', month:'2-digit', year:'numeric',
+    hour:'2-digit', minute:'2-digit'
+  });
+
+  // Monta linhas da tabela
+  const linhas = filtrado.map((r,i) => {
+    const sitCor = r.situacao.includes('EXEC') ? '#1a5c3a'
+                 : r.situacao.includes('CANC') ? '#b03a2e'
+                 : '#c08b2a';
+    const bgRow  = i % 2 === 0 ? '#ffffff' : '#f7f9fc';
+    return `<tr style="background:${bgRow}">
+      <td>${r.os}</td>
+      <td>${r.mes}</td>
+      <td>${r.viajante}</td>
+      <td>${r.setor_sol}</td>
+      <td>${r.setor_atend}</td>
+      <td style="max-width:220px;word-wrap:break-word;font-size:10px">${r.descricao}</td>
+      <td>${(r.motivo||'').replace(/  /g,' ')}</td>
+      <td style="text-align:right;font-weight:600;color:#1a3a5c">${fmt(r.valor)}</td>
+      <td style="color:${sitCor};font-weight:700">${r.situacao.replace(/  /g,' ')}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>${titulo}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 11px; color: #1a1a2e; padding: 16px; }
+  .header { margin-bottom: 14px; }
+  .header h1 { font-size: 15px; color: #1a3a5c; margin-bottom: 4px; }
+  .header .sub { font-size: 10px; color: #666; }
+  .filtros { background: #f0f5ff; border: 1px solid #d0d9e8; border-radius: 6px;
+             padding: 7px 12px; margin-bottom: 10px; font-size: 10.5px; color: #1a3a5c; }
+  .filtros strong { margin-right: 4px; }
+  .resumo { display: flex; gap: 24px; margin-bottom: 12px; }
+  .resumo-item { background: #f7f9fc; border: 1px solid #d0d9e8; border-radius: 6px;
+                 padding: 7px 14px; }
+  .resumo-item .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: #666; }
+  .resumo-item .val { font-size: 14px; font-weight: 700; color: #1a3a5c; }
+  table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+  thead th { background: #1a3a5c; color: white; padding: 7px 8px; text-align: left;
+             font-size: 9.5px; text-transform: uppercase; letter-spacing: .4px; }
+  tbody td { padding: 6px 8px; border-bottom: 1px solid #e8ecf0; vertical-align: top; }
+  tfoot td { padding: 8px; background: #1a3a5c; color: white; font-weight: 700;
+             font-size: 11px; }
+  .footer { margin-top: 14px; font-size: 9px; color: #999; text-align: right; }
+  @media print {
+    body { padding: 8px; }
+    @page { margin: 1.2cm; size: A4 landscape; }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>${titulo}</h1>
+    <div class="sub">UNEMAT — Campus de Cáceres · DURA/DPPF · Emitido em ${agora}</div>
+  </div>
+
+  ${filtros.length > 0 ? `<div class="filtros"><strong>Filtros aplicados:</strong>${filtros.join(' &nbsp;|&nbsp; ')}</div>` : ''}
+
+  <div class="resumo">
+    <div class="resumo-item">
+      <div class="lbl">Total de registros</div>
+      <div class="val">${filtrado.length}</div>
+    </div>
+    <div class="resumo-item">
+      <div class="lbl">Valor executado (excl. cancelados)</div>
+      <div class="val">${fmt(totalValor)}</div>
+    </div>
+    <div class="resumo-item">
+      <div class="lbl">Cancelados</div>
+      <div class="val">${filtrado.filter(r=>r.situacao.includes('CANC')).length}</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>OS</th><th>Mês</th><th>Viajante</th><th>Setor Sol.</th><th>Setor Atend.</th>
+        <th>Descrição</th><th>Motivo</th><th style="text-align:right">Valor</th><th>Situação</th>
+      </tr>
+    </thead>
+    <tbody>${linhas}</tbody>
+    <tfoot>
+      <tr>
+        <td colspan="7">TOTAL (${filtrado.length} registros)</td>
+        <td style="text-align:right">${fmt(totalValor)}</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="footer">Sistema de Diárias UNEMAT Cáceres · ${agora}</div>
+</body>
+</html>`;
+
+  const janela = window.open('', '_blank', 'width=1100,height=750');
+  janela.document.write(html);
+  janela.document.close();
+  janela.focus();
+  setTimeout(() => janela.print(), 400);
+}
+
+// ═══════════════════════════════════════
+//  CONFIGURAÇÕES
+// ═══════════════════════════════════════
+function openConfig() {
+  document.getElementById('cfg-status').textContent = '';
+  document.getElementById('cfg-modal').style.display   = 'block';
+  document.getElementById('cfg-overlay').style.display = 'block';
+}
+function closeConfig() {
+  document.getElementById('cfg-modal').style.display   = 'none';
+  document.getElementById('cfg-overlay').style.display = 'none';
+}
+async function cfgSyncNow() {
+  document.getElementById('cfg-status').textContent = '⏳ Buscando dados do Supabase...';
   try {
-    const s = localStorage.getItem('sb_config');
-    if (s) {
-      const saved = JSON.parse(s);
-      // Usa credenciais salvas apenas se forem válidas e diferentes do padrão
-      if (saved.url && saved.url.includes('supabase') && saved.key && saved.key.length > 20)
-        return saved;
-    }
-  } catch(e) {}
-  return SB_DEFAULT; // sempre cai no padrão embutido
-}
-function saveSB(cfg) { localStorage.setItem('sb_config', JSON.stringify(cfg)); }
-function SB_OK() { const c = getSB(); return !!(c.url && c.key && c.url.includes('supabase')); }
-
-// Chamada REST ao Supabase
-async function sbFetch(table, method, body, params) {
-  const { url, key } = getSB();
-  if (!url || !key) return null;
-  let endpoint = url.replace(/\/$/, '') + '/rest/v1/' + table;
-  if (params) endpoint += '?' + new URLSearchParams(params).toString();
-  try {
-    const opts = {
-      method,
-      headers: {
-        'apikey': key,
-        'Authorization': 'Bearer ' + key,
-        'Content-Type': 'application/json',
-        'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal',
-      }
-    };
-    if (body) opts.body = JSON.stringify(body);
-    const r = await fetch(endpoint, opts);
-    if (!r.ok) { const err = await r.text(); throw new Error('HTTP ' + r.status + ': ' + err); }
-    const text = await r.text();
-    return text ? JSON.parse(text) : [];
-  } catch(e) { console.warn('Supabase error:', e); return null; }
-}
-
-// Mapear linha do Supabase → formato interno
-function sbToReg(r) {
-  return {
-    os: r.os_num, mes: r.mes, viajante: r.viajante,
-    setor_sol: r.setor_sol, setor_vinc: r.setor_vinc, setor_atend: r.setor_atend,
-    descricao: r.descricao, valor: parseFloat(r.valor)||0,
-    motivo: r.motivo, situacao: r.situacao, obs: r.obs||'', _id: r.id,
-  };
-}
-
-// Mapear registro interno → linha do Supabase
-function regToSb(r) {
-  return {
-    os_num: String(r.os), mes: r.mes, viajante: r.viajante,
-    setor_sol: r.setor_sol, setor_vinc: r.setor_vinc||'', setor_atend: r.setor_atend||'',
-    descricao: r.descricao||'', valor: parseFloat(r.valor)||0,
-    motivo: r.motivo||'', situacao: r.situacao||'', obs: r.obs||'',
-  };
-}
-
-// Buscar todos os registros
-async function apiGet(table) {
-  if (!SB_OK()) return null;
-  const r = await sbFetch(table, 'GET', null, { select:'*', order:'created_at.asc', limit:5000 });
-  return Array.isArray(r) ? r : null;
-}
-
-// Salvar / atualizar (upsert por os_num)
-async function apiSave(table, record) {
-  if (!SB_OK()) return null;
-  const r = await sbFetch(table, 'POST', regToSb(record), null);
-  return r !== null ? { ok:true } : { ok:false };
-}
-
-// Excluir por número de OS
-async function apiDelete(table, record) {
-  if (!SB_OK()) return null;
-  const os = String((record && record.os) ? record.os : record).trim();
-  const r = await sbFetch(table, 'DELETE', null, { os_num: 'eq.'+os });
-  return r !== null ? { ok:true } : { ok:false };
-}
-
-// Carga em lote (upsert em chunks)
-async function apiBulk(table, records) {
-  if (!SB_OK()) return null;
-  const CHUNK = 100;
-  let total = 0;
-  for (let i = 0; i < records.length; i += CHUNK) {
-    const rows = records.slice(i, i+CHUNK).map(regToSb);
-    const r = await sbFetch(table, 'POST', rows, null);
-    if (r === null) return { ok:false, error:'Falha no chunk '+i };
-    total += rows.length;
-    showSyncMsg('⏳ Enviando... ' + Math.min(i+CHUNK, records.length) + '/' + records.length);
+    await syncFromServer(false);
+    document.getElementById('cfg-status').innerHTML =
+      '<span style="color:var(--verde)">✅ Sincronizado! '+(DC.length+DP.length)+' registros.</span>';
+  } catch(e) {
+    document.getElementById('cfg-status').innerHTML =
+      '<span style="color:var(--verm)">❌ Erro ao conectar.</span>';
   }
-  return { ok:true, count:total };
 }
-
-// Sincronizar do servidor
-async function syncFromServer(silent) {
-  if (!SB_OK()) { if (!silent) showSyncMsg('⚠️ Supabase não configurado'); return false; }
-  if (!silent) showSyncMsg('⏳ Sincronizando...');
-  const [dc, dp] = await Promise.all([apiGet('campus'), apiGet('posgrad')]);
-  if (dc) { DC = dc.map(sbToReg); saveC(); }
-  if (dp) { DP = dp.map(sbToReg); saveP(); }
-  if (dc || dp) {
-    ORC = calcExec(loadORC());
-    cFilt=[...DC]; pFilt=[...DP];
-    preencheDL(); renderDash();
-    if (!silent) showSyncMsg('✅ ' + (DC.length+DP.length) + ' registros sincronizados!');
-    return true;
+async function cfgUploadAll() {
+  if (!confirm('Enviar TODOS os dados locais para o Supabase?\nRegistros com mesma OS serão atualizados.\n\nConfirma?')) return;
+  document.getElementById('cfg-status').textContent = '⏳ Enviando Campus...';
+  const r1 = await apiBulk('campus', DC);
+  document.getElementById('cfg-status').textContent = '⏳ Enviando Pós-Graduação...';
+  const r2 = await apiBulk('posgrad', DP);
+  if (r1&&r1.ok&&r2&&r2.ok) {
+    document.getElementById('cfg-status').innerHTML =
+      '<span style="color:var(--verde)">✅ Carga completa! Campus: '+r1.count+', Pós: '+r2.count+'</span>';
+    toast('✅ Dados enviados ao Supabase!','azul',4000);
+  } else {
+    document.getElementById('cfg-status').innerHTML =
+      '<span style="color:var(--verm)">❌ Erro na carga. Tente novamente.</span>';
   }
-  if (!silent) showSyncMsg('⚠️ Sem dados no servidor');
-  return false;
-}
-
-// Notificação no topo
-function showSyncMsg(msg) {
-  let el = document.getElementById('sync-msg');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'sync-msg';
-    el.style.cssText = 'position:fixed;top:68px;right:16px;background:var(--azul);color:#fff;'
-      +'padding:9px 16px;border-radius:9px;font-size:12.5px;font-weight:500;z-index:500;'
-      +'box-shadow:0 4px 14px rgba(0,0,0,.25);transition:opacity .4s;pointer-events:none';
-    document.body.appendChild(el);
-  }
-  el.textContent = msg; el.style.opacity = '1';
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.style.opacity='0', 3500);
-}
-
-// ═══════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════
-function toast(msg, cor){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className=`toast ${cor} show`;
-  setTimeout(()=>t.classList.remove('show'),2800);
 }
 
 // ═══════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════
+ORC = calcExec(loadORC()); // DC e DP já estão definidos aqui
 preencheDL();
 renderDash();
+
+syncFromServer(true); // auto-sync Supabase ao abrir
 </script>
 </body>
 </html>

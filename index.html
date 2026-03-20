@@ -323,6 +323,17 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
     </div>
   </div>
 
+  <div class="g2" style="margin-top:0">
+    <div class="card card-anim" style="animation-delay:.7s">
+      <div class="ch" style="color:var(--azul)">Setores Atendidos — Campus (Quantidade de Viagens)</div>
+      <div class="chart-box" style="height:280px"><canvas id="ch-setat-c"></canvas></div>
+    </div>
+    <div class="card card-anim" style="animation-delay:.75s">
+      <div class="ch" style="color:var(--azul)">Setores Atendidos — Campus (Valor Executado)</div>
+      <div class="chart-box" style="height:280px"><canvas id="ch-setat-cv"></canvas></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ══════════════════════════════════════
@@ -1301,6 +1312,94 @@ function renderDash(){
       scales:{
         x:{ grid:{color:'rgba(208,217,232,0.4)'}, ticks:{font:{size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'} },
         y:{ grid:{display:false}, ticks:{font:{size:11,weight:'600'}} }
+      }
+    }
+  });
+  // ── CHART: Setores Atendidos Campus — Quantidade de viagens
+  const satQ={};
+  DC.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
+    const k=(r.setor_atend||'–').trim();
+    satQ[k]=(satQ[k]||0)+1;
+  });
+  const satQE = Object.entries(satQ).sort((a,b)=>b[1]-a[1]).slice(0,15);
+
+  mkChart('ch-setat-c',{
+    type:'bar',
+    data:{
+      labels: satQE.map(([k])=>k),
+      datasets:[{
+        data: satQE.map(([,v])=>v),
+        backgroundColor: ctx=>{
+          const g=ctx.chart.ctx.createLinearGradient(0,0,300,0);
+          g.addColorStop(0,'rgba(26,58,92,0.92)');
+          g.addColorStop(1,'rgba(90,159,212,0.45)');
+          return g;
+        },
+        borderColor:'#3a7cbf', borderWidth:1.5, borderRadius:5, borderSkipped:false,
+      }]
+    },
+    options:{
+      indexAxis:'y', clip:false,
+      responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{top:4, right:50} },
+      animation:{ duration:1000, easing:'easeOutQuart', delay:ctx=>ctx.dataIndex*50 },
+      plugins:{
+        legend:{display:false},
+        tooltip:{ backgroundColor:'rgba(26,58,92,0.92)', padding:10, cornerRadius:8,
+          callbacks:{ label: ctx=>' '+ctx.raw+' viagem(s)' } },
+        datalabels:{ anchor:'end', align:'end', offset:5, clip:false,
+          formatter: v => v,
+          font:{ size:10, weight:'700' }, color:'#1a3a5c' }
+      },
+      scales:{
+        x:{ suggestedMax: (satQE[0]?satQE[0][1]:1)*1.25,
+            grid:{color:'rgba(208,217,232,0.4)'}, ticks:{font:{size:10}} },
+        y:{ grid:{display:false}, ticks:{font:{size:10.5,weight:'600'}} }
+      }
+    }
+  });
+
+  // ── CHART: Setores Atendidos Campus — Valor executado
+  const satV={};
+  DC.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
+    const k=(r.setor_atend||'–').trim();
+    satV[k]=(satV[k]||0)+r.valor;
+  });
+  const satVE = Object.entries(satV).sort((a,b)=>b[1]-a[1]).slice(0,15);
+
+  mkChart('ch-setat-cv',{
+    type:'bar',
+    data:{
+      labels: satVE.map(([k])=>k),
+      datasets:[{
+        data: satVE.map(([,v])=>v),
+        backgroundColor: ctx=>{
+          const g=ctx.chart.ctx.createLinearGradient(0,0,300,0);
+          g.addColorStop(0,'rgba(26,58,92,0.92)');
+          g.addColorStop(1,'rgba(58,124,191,0.4)');
+          return g;
+        },
+        borderColor:'#3a7cbf', borderWidth:1.5, borderRadius:5, borderSkipped:false,
+      }]
+    },
+    options:{
+      indexAxis:'y', clip:false,
+      responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{top:4, right:60} },
+      animation:{ duration:1000, easing:'easeOutQuart', delay:ctx=>ctx.dataIndex*50 },
+      plugins:{
+        legend:{display:false},
+        tooltip:{ backgroundColor:'rgba(26,58,92,0.92)', padding:10, cornerRadius:8,
+          callbacks:{ label: ctx=>' '+fmt(ctx.raw) } },
+        datalabels:{ anchor:'end', align:'end', offset:5, clip:false,
+          formatter: v => v>0?'R$'+(v/1000).toFixed(1)+'k':'',
+          font:{ size:10, weight:'700' }, color:'#1a3a5c' }
+      },
+      scales:{
+        x:{ suggestedMax: (satVE[0]?satVE[0][1]:1)*1.25,
+            grid:{color:'rgba(208,217,232,0.4)'},
+            ticks:{font:{size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'} },
+        y:{ grid:{display:false}, ticks:{font:{size:10.5,weight:'600'}} }
       }
     }
   });

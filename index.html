@@ -492,7 +492,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
         <select id="pf-set" onchange="renderPos()">
           <option value="">Todos</option>
           <option>PPGCA</option><option>PPGEdu</option><option>PPGGeo</option>
-          <option>PPGL</option><option>PPGMP</option><option>PROFHISTÓRIA</option><option>PROFLetras</option>
+          <option>PPGL</option><option>Bionorte</option><option>PROFHISTÓRIA</option><option>PROFLetras</option>
         </select>
       </div>
       <div class="fg"><label>Situação</label><select id="pf-sit" onchange="renderPos()"><option value="">Todas</option><option>EXECUTADA</option><option>CANCELADA</option><option>REPASSE  EXTERNO</option></select></div>
@@ -525,7 +525,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
   <div id="posgrad-novo" style="display:none">
     <div class="fwrap">
       <div class="fttl verd" id="p-form-ttl">Novo Lançamento — Pós-Graduação (PAOE 2211)</div>
-      <div class="fsub">Programas: PPGCA · PPGEdu · PPGGeo · PPGL · PPGMP · PROFHISTÓRIA · PROFLetras</div>
+      <div class="fsub">Programas: PPGCA · PPGEdu · PPGGeo · PPGL · Bionorte · PROFHISTÓRIA · PROFLetras</div>
       <input type="hidden" id="p-edit-idx">
       <div class="ff2">
         <div class="fld verd"><label>Nº OS *</label><input id="pi-os" placeholder="Ex: 315000" type="text"></div>
@@ -540,7 +540,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
           <select id="pi-sol">
             <option value="">Selecione...</option>
             <option>PPGCA</option><option>PPGEdu</option><option>PPGGeo</option>
-            <option>PPGL</option><option>PPGMP</option><option>PROFHISTÓRIA</option><option>PROFLetras</option>
+            <option>PPGL</option><option>Bionorte</option><option>PROFHISTÓRIA</option><option>PROFLetras</option>
           </select>
         </div>
         <div class="fld verd"><label>Setor Vinculação</label>
@@ -554,7 +554,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
           <select id="pi-atend">
             <option value="">Selecione...</option>
             <option>PPGCA</option><option>PPGEdu</option><option>PPGGeo</option>
-            <option>PPGL</option><option>PPGMP</option><option>PROFHISTÓRIA</option><option>PROFLetras</option>
+            <option>PPGL</option><option>Bionorte</option><option>PROFHISTÓRIA</option><option>PROFLetras</option>
             <option>FACAB</option><option>FACH</option><option>FACIS</option><option>OUTROS</option>
           </select>
         </div>
@@ -738,7 +738,7 @@ const ORC_DEFAULT = {
     'PROFHISTÓRIA':{prev:20000},
     'PPGCA':       {prev:20000},
     'PROFLetras':  {prev:10000},
-    'PPGMP':       {prev:0}
+    'Bionorte':       {prev:0}
   }
 };
 
@@ -1417,7 +1417,7 @@ function buildSGCampus(){
 }
 
 function buildSGPos(){
-  const progs=['PPGCA','PPGEdu','PPGGeo','PPGL','PPGMP','PROFHISTÓRIA','PROFLetras'];
+  const progs=['PPGCA','PPGEdu','PPGGeo','PPGL','Bionorte','PROFHISTÓRIA','PROFLetras'];
   const cl=['vd','','vd','','vd','','vd'];
   document.getElementById('sg-posgrad').innerHTML = progs.map((k,i)=>{
     const v=DP.filter(r=>r.setor_sol===k).filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);

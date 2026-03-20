@@ -667,24 +667,31 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
 
 </div><!-- /wrap -->
 
-<!-- ══ MODAL CONFIGURAÇÕES ══ -->
+<!-- ══ MODAL CONFIGURAÇÕES SUPABASE ══ -->
 <div id="cfg-overlay" onclick="closeConfig()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:800"></div>
-<div id="cfg-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:801;background:#fff;border-radius:16px;padding:28px 32px;width:500px;max-width:95vw;box-shadow:0 16px 48px rgba(0,0,0,.25)">
+<div id="cfg-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:801;background:#fff;border-radius:16px;padding:28px 32px;width:520px;max-width:95vw;box-shadow:0 16px 48px rgba(0,0,0,.25)">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--azul)">⚙️ Configurações do Sistema</div>
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--azul)">⚙️ Configurações — Supabase</div>
     <button onclick="closeConfig()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--cinza-m)">✕</button>
   </div>
 
-  <div style="margin-bottom:18px">
-    <label style="font-size:11px;font-weight:700;color:var(--cinza-m);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">URL do Google Apps Script</label>
-    <input id="cfg-url" type="text" placeholder="https://script.google.com/macros/s/..." 
+  <div style="margin-bottom:14px">
+    <label style="font-size:11px;font-weight:700;color:var(--cinza-m);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">URL do Projeto Supabase</label>
+    <input id="cfg-url" type="text" placeholder="https://xxxxxxxxxxxx.supabase.co"
       style="width:100%;border:1.5px solid var(--borda);border-radius:9px;padding:9px 12px;font-size:12.5px;font-family:'IBM Plex Sans',sans-serif;outline:none"
       onfocus="this.style.borderColor='var(--azul-c)'" onblur="this.style.borderColor='var(--borda)'">
-    <div style="font-size:11px;color:var(--cinza-l);margin-top:5px">Cole aqui a URL gerada no Google Apps Script após publicar como Web App</div>
+  </div>
+
+  <div style="margin-bottom:18px">
+    <label style="font-size:11px;font-weight:700;color:var(--cinza-m);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px">Chave API (anon/public)</label>
+    <input id="cfg-key" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      style="width:100%;border:1.5px solid var(--borda);border-radius:9px;padding:9px 12px;font-size:12.5px;font-family:'IBM Plex Sans',sans-serif;outline:none"
+      onfocus="this.style.borderColor='var(--azul-c)'" onblur="this.style.borderColor='var(--borda)'">
+    <div style="font-size:11px;color:var(--cinza-l);margin-top:5px">Encontre em: Supabase → Settings → API → Project API keys → anon public</div>
   </div>
 
   <div style="display:flex;flex-direction:column;gap:10px">
-    <button onclick="cfgSaveUrl()" class="btn bp" style="width:100%;justify-content:center">💾 Salvar URL e Testar Conexão</button>
+    <button onclick="cfgSaveUrl()" class="btn bp" style="width:100%;justify-content:center">💾 Salvar e Testar Conexão</button>
     <button onclick="cfgSyncNow()" class="btn bo" style="width:100%;justify-content:center">🔄 Sincronizar — Buscar dados do servidor</button>
     <button onclick="cfgUploadAll()" class="btn bo" style="width:100%;justify-content:center;border-color:var(--ouro);color:var(--ouro)">⬆️ Carga Inicial — Enviar TODOS os dados ao servidor</button>
   </div>
@@ -692,10 +699,12 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
   <div id="cfg-status" style="margin-top:14px;font-size:12.5px;color:var(--cinza-m);min-height:20px;text-align:center"></div>
 
   <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--borda);font-size:11px;color:var(--cinza-l);line-height:1.6">
-    <strong>Como funciona:</strong> Os dados ficam no Google Sheets. Cada vez que você salva ou exclui um lançamento, ele é atualizado automaticamente no servidor. Use "Sincronizar" para buscar dados adicionados por outros usuários.
+    <strong>Como obter as credenciais:</strong><br>
+    1. Acesse <strong>supabase.com</strong> → seu projeto<br>
+    2. Menu lateral: <strong>Settings → API</strong><br>
+    3. Copie a <strong>Project URL</strong> e a chave <strong>anon public</strong>
   </div>
 </div>
-<div class="toast" id="toast"></div>
 
 <script>
 // ═══════════════════════════════════════
@@ -769,1102 +778,145 @@ let ORC = {}; // inicializado após DC e DP
 const MESES = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
 
 // ═══════════════════════════════════════
-//  CONFIGURAÇÃO DA API (Google Apps Script)
+//  BANCO DE DADOS — Supabase
 // ═══════════════════════════════════════
-const API_URL = 'COLE_SUA_URL_AQUI'; // ← Substitua pela URL do seu Apps Script
+const SB_DEFAULT = {
+  url: 'https://xwzianpzffhbppcqwhhd.supabase.co',
+  key: 'sb_publishable_gKWmcOuPjSEGWKa-Fr3pag_8e9BLOLr'
+};
 
-const API_OK = () => { const u = localStorage.getItem('diarias_api_url') || API_URL; return u && u !== 'COLE_SUA_URL_AQUI'; };
-const getApiUrl = () => localStorage.getItem('diarias_api_url') || API_URL;
-
-// ── Chamada GET genérica ao Apps Script (sem CORS issues)
-async function apiCall(params) {
-  if (!API_OK()) return null;
+function getSB() {
   try {
-    const url = getApiUrl() + '?' + new URLSearchParams({...params, t: Date.now()}).toString();
-    const r   = await fetch(url);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return await r.json();
-  } catch(e) { console.warn('API error:', e); return null; }
+    const s = localStorage.getItem('sb_config');
+    if (s) {
+      const saved = JSON.parse(s);
+      // Usa credenciais salvas apenas se forem válidas e diferentes do padrão
+      if (saved.url && saved.url.includes('supabase') && saved.key && saved.key.length > 20)
+        return saved;
+    }
+  } catch(e) {}
+  return SB_DEFAULT; // sempre cai no padrão embutido
+}
+function saveSB(cfg) { localStorage.setItem('sb_config', JSON.stringify(cfg)); }
+function SB_OK() { const c = getSB(); return !!(c.url && c.key && c.url.includes('supabase')); }
+
+// Chamada REST ao Supabase
+async function sbFetch(table, method, body, params) {
+  const { url, key } = getSB();
+  if (!url || !key) return null;
+  let endpoint = url.replace(/\/$/, '') + '/rest/v1/' + table;
+  if (params) endpoint += '?' + new URLSearchParams(params).toString();
+  try {
+    const opts = {
+      method,
+      headers: {
+        'apikey': key,
+        'Authorization': 'Bearer ' + key,
+        'Content-Type': 'application/json',
+        'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal',
+      }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(endpoint, opts);
+    if (!r.ok) { const err = await r.text(); throw new Error('HTTP ' + r.status + ': ' + err); }
+    const text = await r.text();
+    return text ? JSON.parse(text) : [];
+  } catch(e) { console.warn('Supabase error:', e); return null; }
 }
 
-// Buscar dados do servidor
-async function apiGet(sheet) {
-  const j = await apiCall({ action:'get', sheet });
-  return j && j.ok ? j.data : null;
+// Mapear linha do Supabase → formato interno
+function sbToReg(r) {
+  return {
+    os: r.os_num, mes: r.mes, viajante: r.viajante,
+    setor_sol: r.setor_sol, setor_vinc: r.setor_vinc, setor_atend: r.setor_atend,
+    descricao: r.descricao, valor: parseFloat(r.valor)||0,
+    motivo: r.motivo, situacao: r.situacao, obs: r.obs||'', _id: r.id,
+  };
 }
 
-// Salvar um registro (via GET com record codificado)
-async function apiSave(sheet, record) {
-  const j = await apiCall({
-    action: 'save',
-    sheet,
-    record: encodeURIComponent(JSON.stringify(record))
-  });
-  return j;
+// Mapear registro interno → linha do Supabase
+function regToSb(r) {
+  return {
+    os_num: String(r.os), mes: r.mes, viajante: r.viajante,
+    setor_sol: r.setor_sol, setor_vinc: r.setor_vinc||'', setor_atend: r.setor_atend||'',
+    descricao: r.descricao||'', valor: parseFloat(r.valor)||0,
+    motivo: r.motivo||'', situacao: r.situacao||'', obs: r.obs||'',
+  };
 }
 
-// Excluir um registro
-async function apiDelete(sheet, _id) {
-  const j = await apiCall({ action:'delete', sheet, _id });
-  return j;
+// Buscar todos os registros
+async function apiGet(table) {
+  if (!SB_OK()) return null;
+  const r = await sbFetch(table, 'GET', null, { select:'*', order:'created_at.asc', limit:5000 });
+  return Array.isArray(r) ? r : null;
 }
 
-// Carga inicial em lote (divide em chunks para não ultrapassar limite de URL)
-async function apiBulk(sheet, records) {
-  const CHUNK = 50;
+// Salvar / atualizar (upsert por os_num)
+async function apiSave(table, record) {
+  if (!SB_OK()) return null;
+  const r = await sbFetch(table, 'POST', regToSb(record), null);
+  return r !== null ? { ok:true } : { ok:false };
+}
+
+// Excluir por número de OS
+async function apiDelete(table, record) {
+  if (!SB_OK()) return null;
+  const os = String((record && record.os) ? record.os : record).trim();
+  const r = await sbFetch(table, 'DELETE', null, { os_num: 'eq.'+os });
+  return r !== null ? { ok:true } : { ok:false };
+}
+
+// Carga em lote (upsert em chunks)
+async function apiBulk(table, records) {
+  if (!SB_OK()) return null;
+  const CHUNK = 100;
   let total = 0;
   for (let i = 0; i < records.length; i += CHUNK) {
-    const chunk = records.slice(i, i + CHUNK);
-    const j = await apiCall({
-      action:  i === 0 ? 'bulk' : 'bulk_append',
-      sheet,
-      records: encodeURIComponent(JSON.stringify(chunk))
-    });
-    if (!j || !j.ok) return { ok: false, error: 'Falha no chunk ' + i };
-    total += j.count || chunk.length;
+    const rows = records.slice(i, i+CHUNK).map(regToSb);
+    const r = await sbFetch(table, 'POST', rows, null);
+    if (r === null) return { ok:false, error:'Falha no chunk '+i };
+    total += rows.length;
+    showSyncMsg('⏳ Enviando... ' + Math.min(i+CHUNK, records.length) + '/' + records.length);
   }
-  return { ok: true, count: total };
+  return { ok:true, count:total };
 }
 
-// Carregar dados do servidor (substitui localStorage)
-async function loadFromServer() {
-  if (!API_OK()) return;
-  showSyncMsg('⏳ Carregando dados do servidor...');
-  try {
-    const [dc, dp] = await Promise.all([apiGet('campus'), apiGet('posgrad')]);
-    if (dc && dc.length > 0) {
-      DC = dc.map(r => ({...r, valor: parseFloat(r.valor)||0}));
-      saveC();
-    }
-    if (dp && dp.length > 0) {
-      DP = dp.map(r => ({...r, valor: parseFloat(r.valor)||0}));
-      saveP();
-    }
-    showSyncMsg('✅ Dados sincronizados!');
-  } catch(e) {
-    showSyncMsg('⚠️ Sem conexão — usando dados locais');
+// Sincronizar do servidor
+async function syncFromServer(silent) {
+  if (!SB_OK()) { if (!silent) showSyncMsg('⚠️ Supabase não configurado'); return false; }
+  if (!silent) showSyncMsg('⏳ Sincronizando...');
+  const [dc, dp] = await Promise.all([apiGet('campus'), apiGet('posgrad')]);
+  if (dc) { DC = dc.map(sbToReg); saveC(); }
+  if (dp) { DP = dp.map(sbToReg); saveP(); }
+  if (dc || dp) {
+    ORC = calcExec(loadORC());
+    cFilt=[...DC]; pFilt=[...DP];
+    preencheDL(); renderDash();
+    if (!silent) showSyncMsg('✅ ' + (DC.length+DP.length) + ' registros sincronizados!');
+    return true;
   }
+  if (!silent) showSyncMsg('⚠️ Sem dados no servidor');
+  return false;
 }
 
+// Notificação no topo
 function showSyncMsg(msg) {
   let el = document.getElementById('sync-msg');
   if (!el) {
     el = document.createElement('div');
     el.id = 'sync-msg';
-    el.style.cssText = 'position:fixed;top:68px;right:16px;background:var(--azul);color:#fff;padding:9px 16px;border-radius:9px;font-size:12.5px;font-weight:500;z-index:500;box-shadow:0 4px 14px rgba(0,0,0,.25);transition:opacity .4s';
+    el.style.cssText = 'position:fixed;top:68px;right:16px;background:var(--azul);color:#fff;'
+      +'padding:9px 16px;border-radius:9px;font-size:12.5px;font-weight:500;z-index:500;'
+      +'box-shadow:0 4px 14px rgba(0,0,0,.25);transition:opacity .4s;pointer-events:none';
     document.body.appendChild(el);
   }
-  el.textContent = msg;
-  el.style.opacity = '1';
+  el.textContent = msg; el.style.opacity = '1';
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.style.opacity = '0', 3500);
-}
-
-
-// ═══════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════
-let DC = JSON.parse(localStorage.getItem('diarC') || 'null') || [...DADOS_CAMPUS_INIT];
-let DP = JSON.parse(localStorage.getItem('diarP') || 'null') || [...DADOS_POS_INIT];
-
-let cFilt=[...DC], pFilt=[...DP];
-let cSortK='os', cSortA=true, cPage=1;
-let pSortK='os', pSortA=true, pPage=1;
-const PG=20;
-
-function saveC(){ try{localStorage.setItem('diarC',JSON.stringify(DC));}catch(e){} }
-function saveP(){ try{localStorage.setItem('diarP',JSON.stringify(DP));}catch(e){} }
-function fmt(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-
-function badge(s){
-  const u=(s||'').toUpperCase();
-  if(u.includes('EXEC')) return '<span class="badge be">EXECUTADA</span>';
-  if(u.includes('CANC')) return '<span class="badge bc">CANCELADA</span>';
-  if(u.includes('REP'))  return '<span class="badge br2">REPASSE</span>';
-  if(u.includes('PED'))  return '<span class="badge bp2">PED</span>';
-  if(u.includes('EMP'))  return '<span class="badge bem">EMPENHO</span>';
-  return `<span class="badge" style="background:#eee">${s||'–'}</span>`;
+  el._t = setTimeout(() => el.style.opacity='0', 3500);
 }
 
 // ═══════════════════════════════════════
-//  NAVEGAÇÃO
-// ═══════════════════════════════════════
-function showMain(tab){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
-  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
-  document.getElementById('tab-'+tab).classList.add('on');
-  const idx={dashboard:0,campus:1,posgrad:2,orcamento:3}[tab];
-  document.querySelectorAll('.nb')[idx]?.classList.add('on');
-  if(tab==='dashboard') renderDash();
-  if(tab==='campus')    { renderCampus(); buildSGCampus(); }
-  if(tab==='posgrad')   { renderPos();   buildSGPos(); }
-  if(tab==='orcamento'){ ORC=calcExec(loadORC()); renderOrc(); }
-}
-
-function showSec(sec, part){
-  const list=document.getElementById(sec+'-list');
-  const novo=document.getElementById(sec+'-novo');
-  const btns=document.querySelectorAll('#tab-'+sec+' .stab');
-  list.style.display = part==='list'?'block':'none';
-  novo.style.display = part==='novo'?'block':'none';
-  btns[0].classList.toggle('on', part==='list');
-  btns[1].classList.toggle('on', part==='novo');
-  if(part==='list' && sec==='campus')  renderCampus();
-  if(part==='list' && sec==='posgrad') renderPos();
-}
-
-// ═══════════════════════════════════════
-//  DASHBOARD
-// ═══════════════════════════════════════
-// ── Chart instances (destroy before recreate)
-let _charts = {};
-function mkChart(id, cfg){
-  if(_charts[id]){ _charts[id].destroy(); }
-  const el = document.getElementById(id);
-  if(!el) return;
-  _charts[id] = new Chart(el, cfg);
-  return _charts[id];
-}
-
-// ── Shared Chart.js defaults
-Chart.register(ChartDataLabels);
-Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
-Chart.defaults.layout = { padding:{ top:20, right:20, bottom:0, left:0 } };
-Chart.defaults.color = '#4a5a72';
-
-const PALETTE_AZUL  = ['#1a3a5c','#245080','#3a7cbf','#5a9fd4','#8ec4e8','#b8daf0','#d6ecf7','#e8f4fb','#c5def2','#9ec9e8'];
-const PALETTE_VERDE = ['#1a5c3a','#2d7a52','#4ca372','#72bb94','#9ed1b4','#c2e6d2','#1a4a5c','#235070','#347296','#5090b8'];
-const PALETTE_MIXED = ['#1a3a5c','#1a5c3a','#c08b2a','#b03a2e','#5a9fd4','#4ca372','#e8b84b','#e87060','#8ec4e8','#9ed1b4'];
-
-function animNum(el, target, prefix='', suffix='', dur=800){
-  const start = performance.now();
-  const from = 0;
-  function step(now){
-    const p = Math.min((now-start)/dur, 1);
-    const ease = 1 - Math.pow(1-p, 3);
-    el.textContent = prefix + Math.round(from + (target-from)*ease).toLocaleString('pt-BR') + suffix;
-    if(p < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
-function renderDash(){
-  const all = [...DC, ...DP];
-  const vC = DC.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
-  const vP = DP.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
-  const can = all.filter(r=>r.situacao.includes('CANC')).length;
-
-  // Animated KPIs
-  animNum(document.getElementById('k-tot'), all.length);
-  // valor total with R$ prefix — custom
-  const kval = document.getElementById('k-val');
-  const kcamp = document.getElementById('k-camp');
-  const kpos  = document.getElementById('k-pos');
-  const start0 = performance.now();
-  function stepVal(now){
-    const p = Math.min((now-start0)/900, 1);
-    const e = 1-Math.pow(1-p, 3);
-    const v = (vC+vP)*e;
-    kval.textContent  = 'R$ '+Math.round(v).toLocaleString('pt-BR');
-    kcamp.textContent = 'R$ '+Math.round(vC*e).toLocaleString('pt-BR');
-    kpos.textContent  = 'R$ '+Math.round(vP*e).toLocaleString('pt-BR');
-    if(p<1) requestAnimationFrame(stepVal);
-    else {
-      kval.textContent  = fmt(vC+vP);
-      kcamp.textContent = fmt(vC);
-      kpos.textContent  = fmt(vP);
-    }
-  }
-  requestAnimationFrame(stepVal);
-
-  document.getElementById('k-camp-n').textContent = DC.length+' lançamentos';
-  document.getElementById('k-pos-n').textContent  = DP.length+' lançamentos';
-  animNum(document.getElementById('k-can'), can);
-
-  // ── CHART 1: Barras mensais (gradiente)
-  const mG={};MESES.forEach(m=>mG[m]=0);
-  all.forEach(r=>{if(mG[r.mes]!==undefined&&!r.situacao.includes('CANC'))mG[r.mes]+=r.valor;});
-
-  mkChart('ch-mes-g',{
-    type:'bar',
-    data:{
-      labels: MESES,
-      datasets:[{
-        label:'Valor (R$)',
-        data: MESES.map(m=>mG[m]),
-        backgroundColor: ctx=>{
-          const g = ctx.chart.ctx.createLinearGradient(0,0,0,200);
-          g.addColorStop(0,'rgba(58,124,191,0.9)');
-          g.addColorStop(1,'rgba(26,58,92,0.5)');
-          return g;
-        },
-        borderColor:'rgba(58,124,191,1)',
-        borderWidth:1.5,
-        borderRadius:6,
-        borderSkipped:false,
-      }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      clip:false,
-      animation:{ duration:900, easing:'easeOutQuart' },
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'rgba(26,58,92,0.92)',
-          titleFont:{size:11,weight:'600'},
-          bodyFont:{size:12,weight:'700'},
-          padding:10, cornerRadius:8,
-          callbacks:{ label: ctx=>' '+fmt(ctx.raw) }
-        },
-        datalabels:{
-          anchor:'end', align:'end',
-          formatter: v => v > 0 ? 'R$'+(v/1000).toFixed(0)+'k' : '',
-          font:{ size:9, weight:'700' },
-          color:'#1a3a5c',
-          padding:2,
-        }
-      },
-      scales:{
-        x:{ grid:{display:false}, ticks:{font:{size:10}} },
-        y:{
-          grid:{color:'rgba(208,217,232,0.5)', lineWidth:1},
-          ticks:{
-            font:{size:10},
-            callback: v => v>=1000 ? 'R$'+(v/1000).toFixed(0)+'k' : 'R$'+v
-          }
-        }
-      }
-    }
-  });
-
-  // ── CHART 2: Stacked bar Campus vs Pós
-  const mC={},mPo={};MESES.forEach(m=>{mC[m]=0;mPo[m]=0;});
-  DC.forEach(r=>{if(mC[r.mes]!==undefined&&!r.situacao.includes('CANC'))mC[r.mes]+=r.valor;});
-  DP.forEach(r=>{if(mPo[r.mes]!==undefined&&!r.situacao.includes('CANC'))mPo[r.mes]+=r.valor;});
-
-  mkChart('ch-split',{
-    type:'bar',
-    data:{
-      labels: MESES,
-      datasets:[
-        {
-          label:'Campus (PTA)',
-          data: MESES.map(m=>mC[m]),
-          backgroundColor:'rgba(58,124,191,0.82)',
-          borderColor:'#3a7cbf', borderWidth:1, borderRadius:{topLeft:4,topRight:4},
-          borderSkipped:false,
-        },
-        {
-          label:'Pós-Graduação',
-          data: MESES.map(m=>mPo[m]),
-          backgroundColor:'rgba(76,163,114,0.82)',
-          borderColor:'#4ca372', borderWidth:1, borderRadius:{topLeft:4,topRight:4},
-          borderSkipped:false,
-        }
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      clip:false,
-      animation:{ duration:1000, easing:'easeOutBack', delay:ctx=>ctx.dataIndex*30 },
-      plugins:{
-        legend:{ position:'bottom', labels:{boxWidth:10, padding:14, font:{size:11}} },
-        tooltip:{
-          backgroundColor:'rgba(26,26,40,0.9)',
-          padding:10, cornerRadius:8,
-          callbacks:{ label: ctx=>' '+ctx.dataset.label+': '+fmt(ctx.raw) }
-        },
-        datalabels:{
-          display: ctx => ctx.datasetIndex === 1 && ctx.dataset.data[ctx.dataIndex] > 0,
-          anchor:'end', align:'end',
-          formatter: (v, ctx) => {
-            const total = (ctx.chart.data.datasets[0].data[ctx.dataIndex]||0) + (ctx.chart.data.datasets[1].data[ctx.dataIndex]||0);
-            return total > 0 ? 'R$'+(total/1000).toFixed(0)+'k' : '';
-          },
-          font:{ size:9, weight:'700' },
-          color:'#1a2535',
-          padding:2,
-        }
-      },
-      scales:{
-        x:{ stacked:true, grid:{display:false}, ticks:{font:{size:10}} },
-        y:{ stacked:true, grid:{color:'rgba(208,217,232,0.4)'}, ticks:{ font:{size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k' } }
-      }
-    }
-  });
-
-  // ── CHART 3: Donut situação
-  const sit={};
-  all.forEach(r=>{ const k=r.situacao||'–'; sit[k]=(sit[k]||0)+1; });
-  const sitEntries = Object.entries(sit).sort((a,b)=>b[1]-a[1]);
-  const sitColors  = ['#4ca372','#b03a2e','#c08b2a','#6366f1','#22c55e','#aaa'];
-
-  mkChart('ch-sit-g',{
-    type:'doughnut',
-    data:{
-      labels: sitEntries.map(([k])=>k.replace('  ',' ')),
-      datasets:[{
-        data: sitEntries.map(([,v])=>v),
-        backgroundColor: sitColors,
-        borderWidth:3,
-        borderColor:'#fff',
-        hoverBorderWidth:0,
-        hoverOffset:10,
-      }]
-    },
-    options:{
-      responsive:false,
-      cutout:'68%',
-      animation:{ animateRotate:true, duration:900, easing:'easeOutQuart' },
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'rgba(26,26,40,0.88)',
-          padding:10, cornerRadius:8,
-          callbacks:{ label: ctx=>' '+ctx.label+': '+ctx.raw+' ('+Math.round(ctx.raw/all.length*100)+'%)' }
-        }
-      }
-    }
-  });
-
-  // Legend
-  document.getElementById('ch-sit-legend').innerHTML = sitEntries.map(([k,v],i)=>`
-    <div class="dl-item">
-      <div class="dl-dot" style="background:${sitColors[i]}"></div>
-      <span>${k.replace('  ',' ')}</span>
-      <span class="dl-val">${v}</span>
-    </div>`).join('');
-
-  // ── CHART 4: Motivos (horizontal bar)
-  const mot={};
-  all.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
-    const k=(r.motivo||'–').replace(/  /g,' ');
-    mot[k]=(mot[k]||0)+r.valor;
-  });
-  const motEntries = Object.entries(mot).sort((a,b)=>b[1]-a[1]).slice(0,8);
-
-  mkChart('ch-mot-g',{
-    type:'bar',
-    data:{
-      labels: motEntries.map(([k])=>k),
-      datasets:[{
-        data: motEntries.map(([,v])=>v),
-        backgroundColor: PALETTE_MIXED.slice(0,motEntries.length).map(c=>c+'dd'),
-        borderColor: PALETTE_MIXED.slice(0,motEntries.length),
-        borderWidth:1.5,
-        borderRadius:5,
-        borderSkipped:false,
-      }]
-    },
-    options:{
-      indexAxis:'y',
-      responsive:true, maintainAspectRatio:false,
-      animation:{ duration:900, easing:'easeOutQuart', delay:ctx=>ctx.dataIndex*60 },
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'rgba(26,26,40,0.9)',
-          padding:10, cornerRadius:8,
-          callbacks:{ label: ctx=>' '+fmt(ctx.raw) }
-        },
-        datalabels:{
-          anchor:'end', align:'end',
-          formatter: v => v > 0 ? 'R$'+(v/1000).toFixed(1)+'k' : '',
-          font:{ size:9.5, weight:'700' },
-          color:'#1a2535',
-          padding:{left:4},
-        }
-      },
-      scales:{
-        x:{ grid:{color:'rgba(208,217,232,0.4)'}, ticks:{font:{size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'} },
-        y:{ grid:{display:false}, ticks:{font:{size:10.5}} }
-      }
-    }
-  });
-
-  // ── CHART 5: Top setores campus
-  const sc={};
-  DC.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{const k=r.setor_sol==='TRANSPORTE'?'SUP.TRANSP':r.setor_sol; sc[k]=(sc[k]||0)+r.valor;});
-  const scE = Object.entries(sc).sort((a,b)=>b[1]-a[1]);
-
-  mkChart('ch-set-c',{
-    type:'bar',
-    data:{
-      labels: scE.map(([k])=>k),
-      datasets:[{
-        data: scE.map(([,v])=>v),
-        backgroundColor: ctx=>{
-          const g=ctx.chart.ctx.createLinearGradient(0,0,300,0);
-          g.addColorStop(0,'rgba(26,58,92,0.9)');
-          g.addColorStop(1,'rgba(58,124,191,0.5)');
-          return g;
-        },
-        borderColor:'#3a7cbf', borderWidth:1.5,
-        borderRadius:5, borderSkipped:false,
-      }]
-    },
-    options:{
-      indexAxis:'y',
-      responsive:true, maintainAspectRatio:false,
-      animation:{ duration:1000, easing:'easeOutQuart', delay:ctx=>ctx.dataIndex*70 },
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'rgba(26,58,92,0.92)',
-          padding:10, cornerRadius:8,
-          callbacks:{ label: ctx=>' '+fmt(ctx.raw) }
-        },
-        datalabels:{
-          anchor:'end', align:'end',
-          formatter: v => v > 0 ? 'R$'+(v/1000).toFixed(1)+'k' : '',
-          font:{ size:10, weight:'700' },
-          color:'#1a3a5c',
-          padding:{left:4},
-        }
-      },
-      scales:{
-        x:{ grid:{color:'rgba(208,217,232,0.4)'}, ticks:{font:{size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'} },
-        y:{ grid:{display:false}, ticks:{font:{size:11,weight:'600'}} }
-      }
-    }
-  });
-
-  // ── CHART 6: Top programas pós
-  const sp={};
-  DP.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{sp[r.setor_sol]=(sp[r.setor_sol]||0)+r.valor;});
-  const spE = Object.entries(sp).sort((a,b)=>b[1]-a[1]);
-
-  mkChart('ch-set-p',{
-    type:'bar',
-    data:{
-      labels: spE.map(([k])=>k),
-      datasets:[{
-        data: spE.map(([,v])=>v),
-        backgroundColor: ctx=>{
-          const g=ctx.chart.ctx.createLinearGradient(0,0,300,0);
-          g.addColorStop(0,'rgba(26,92,58,0.9)');
-          g.addColorStop(1,'rgba(76,163,114,0.5)');
-          return g;
-        },
-        borderColor:'#4ca372', borderWidth:1.5,
-        borderRadius:5, borderSkipped:false,
-      }]
-    },
-    options:{
-      indexAxis:'y',
-      responsive:true, maintainAspectRatio:false,
-      animation:{ duration:1000, easing:'easeOutQuart', delay:ctx=>ctx.dataIndex*80 },
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'rgba(26,92,58,0.92)',
-          padding:10, cornerRadius:8,
-          callbacks:{ label: ctx=>' '+fmt(ctx.raw) }
-        },
-        datalabels:{
-          anchor:'end', align:'end',
-          formatter: v => v > 0 ? 'R$'+(v/1000).toFixed(1)+'k' : '',
-          font:{ size:10, weight:'700' },
-          color:'#1a5c3a',
-          padding:{left:4},
-        }
-      },
-      scales:{
-        x:{ grid:{color:'rgba(208,217,232,0.4)'}, ticks:{font:{size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'} },
-        y:{ grid:{display:false}, ticks:{font:{size:11,weight:'600'}} }
-      }
-    }
-  });
-}
-
-function buildSGCampus(){
-  const map={'TRANSPORTE':'SUP.TRANSP','FACAB':'FACAB','FACISA':'FACISA','FACH':'FACH','FACEL':'FACEL','FACET':'FACET','FACIS':'FACIS','DPPF/DURA':'DPPF/DURA'};
-  const cl=['','vd','','vd','','vd','','vd'];
-  const keys=Object.keys(map);
-  document.getElementById('sg-campus').innerHTML = keys.map((k,i)=>{
-    const v=DC.filter(r=>r.setor_sol===k).filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
-    const n=DC.filter(r=>r.setor_sol===k).length;
-    return `<div class="sc ${cl[i]}"><div class="sc-l">${map[k]}</div><div class="sc-v">${fmt(v)}</div><div class="sc-s">${n} lançamentos</div></div>`;
-  }).join('');
-}
-
-function buildSGPos(){
-  const progs=['PPGCA','PPGEdu','PPGGeo','PPGL','PPGMP','PROFHISTÓRIA','PROFLetras'];
-  const cl=['vd','','vd','','vd','','vd'];
-  document.getElementById('sg-posgrad').innerHTML = progs.map((k,i)=>{
-    const v=DP.filter(r=>r.setor_sol===k).filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
-    const n=DP.filter(r=>r.setor_sol===k).length;
-    return `<div class="sc ${cl[i]}"><div class="sc-l">${k}</div><div class="sc-v">${fmt(v)}</div><div class="sc-s">${n} lançamentos</div></div>`;
-  }).join('');
-}
-
-// ═══════════════════════════════════════
-//  TABELA CAMPUS
-// ═══════════════════════════════════════
-function renderCampus(){
-  const mes=document.getElementById('cf-mes').value;
-  const set=document.getElementById('cf-set').value;
-  const sit=document.getElementById('cf-sit').value;
-  const mot=document.getElementById('cf-mot').value;
-  const bus=document.getElementById('cf-bus').value.toLowerCase();
-
-  cFilt=DC.filter(r=>{
-    if(mes&&r.mes!==mes)return false;
-    if(set&&r.setor_sol!==set)return false;
-    if(sit&&r.situacao!==sit)return false;
-    if(mot&&r.motivo!==mot)return false;
-    if(bus&&!r.os.toLowerCase().includes(bus)&&!r.viajante.toLowerCase().includes(bus)&&!r.descricao.toLowerCase().includes(bus))return false;
-    return true;
-  });
-  cFilt.sort((a,b)=>{
-    let va=a[cSortK]||'',vb=b[cSortK]||'';
-    if(cSortK==='valor')return cSortA?va-vb:vb-va;
-    return cSortA?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));
-  });
-
-  // KPIs campus
-  const vTotal=DC.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
-  document.getElementById('ck-tot').textContent=DC.length;
-  document.getElementById('ck-val').textContent=fmt(vTotal);
-  document.getElementById('ck-can').textContent=DC.filter(r=>r.situacao.includes('CANC')).length;
-  document.getElementById('ck-srv').textContent=new Set(DC.map(r=>r.viajante)).size;
-  buildSGCampus();
-
-  buildTable('c',cFilt,cPage,DC,'c-tbody','c-pag','c-info');
-}
-
-function sortC(k){ if(cSortK===k)cSortA=!cSortA;else{cSortK=k;cSortA=true;} cPage=1; renderCampus(); }
-function clearF(t){ if(t==='c'){['cf-mes','cf-set','cf-sit','cf-mot'].forEach(id=>document.getElementById(id).value='');document.getElementById('cf-bus').value='';cPage=1;renderCampus();}else{['pf-mes','pf-set','pf-sit','pf-mot'].forEach(id=>document.getElementById(id).value='');document.getElementById('pf-bus').value='';pPage=1;renderPos();} }
-
-// ═══════════════════════════════════════
-//  TABELA PÓS
-// ═══════════════════════════════════════
-function renderPos(){
-  const mes=document.getElementById('pf-mes').value;
-  const set=document.getElementById('pf-set').value;
-  const sit=document.getElementById('pf-sit').value;
-  const mot=document.getElementById('pf-mot').value;
-  const bus=document.getElementById('pf-bus').value.toLowerCase();
-
-  pFilt=DP.filter(r=>{
-    if(mes&&r.mes!==mes)return false;
-    if(set&&r.setor_sol!==set)return false;
-    if(sit&&r.situacao!==sit)return false;
-    if(mot&&r.motivo!==mot)return false;
-    if(bus&&!r.os.toLowerCase().includes(bus)&&!r.viajante.toLowerCase().includes(bus)&&!r.descricao.toLowerCase().includes(bus))return false;
-    return true;
-  });
-  pFilt.sort((a,b)=>{
-    let va=a[pSortK]||'',vb=b[pSortK]||'';
-    if(pSortK==='valor')return pSortA?va-vb:vb-va;
-    return pSortA?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));
-  });
-
-  const vTotal=DP.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
-  document.getElementById('pk-tot').textContent=DP.length;
-  document.getElementById('pk-val').textContent=fmt(vTotal);
-  document.getElementById('pk-can').textContent=DP.filter(r=>r.situacao.includes('CANC')).length;
-  document.getElementById('pk-prg').textContent=new Set(DP.map(r=>r.setor_sol)).size;
-  buildSGPos();
-
-  buildTable('p',pFilt,pPage,DP,'p-tbody','p-pag','p-info');
-}
-
-function sortP(k){ if(pSortK===k)pSortA=!pSortA;else{pSortK=k;pSortA=true;} pPage=1; renderPos(); }
-
-// ═══════════════════════════════════════
-//  BUILD TABLE (shared)
-// ═══════════════════════════════════════
-function buildTable(prefix, filt, page, allData, tbodyId, pagId, infoId){
-  const start=(page-1)*PG;
-  const pageD=filt.slice(start,start+PG);
-  const vFilt=filt.filter(r=>!r.situacao.includes('CANC')).reduce((s,r)=>s+r.valor,0);
-
-  document.getElementById(infoId).innerHTML=`<strong>${filt.length}</strong> de <strong>${allData.length}</strong> lançamentos · Valor filtrado: <strong style="color:var(--${prefix==='c'?'azul':'verde'})">${fmt(vFilt)}</strong>`;
-
-  if(!filt.length){
-    document.getElementById(tbodyId).innerHTML=`<tr><td colspan="10"><div class="empty">Nenhum resultado encontrado.</div></td></tr>`;
-    document.getElementById(pagId).innerHTML='';
-    return;
-  }
-
-  document.getElementById(tbodyId).innerHTML = pageD.map(r=>{
-    const idx=allData.indexOf(r);
-    const lbl=r.setor_sol==='TRANSPORTE'?'SUP.TRANSP':r.setor_sol;
-    return `<tr>
-      <td><strong>${r.os}</strong></td>
-      <td>${r.mes}</td>
-      <td style="font-size:11.5px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.viajante}">${r.viajante}</td>
-      <td><span style="font-size:11px;font-weight:600">${lbl}</span></td>
-      <td style="font-size:11.5px">${r.setor_atend}</td>
-      <td class="td-d" title="${r.descricao}">${r.descricao}</td>
-      <td style="font-size:10.5px">${(r.motivo||'').replace(/  /g,' ')}</td>
-      <td class="td-v">${fmt(r.valor)}</td>
-      <td>${badge(r.situacao)}</td>
-      <td style="white-space:nowrap">
-        <button class="btn bo" style="padding:3px 9px;font-size:11px" onclick="editar('${prefix}',${idx})">✏️</button>
-        <button class="btn bd" style="padding:3px 9px;font-size:11px;margin-left:3px" onclick="excluir('${prefix}',${idx})">🗑️</button>
-      </td>
-    </tr>`;
-  }).join('');
-
-  // Paginação
-  const total=Math.ceil(filt.length/PG);
-  let pg=`<button class="pb" onclick="${prefix==='c'?'cPage':'pPage'}=${page-1};${prefix==='c'?'renderCampus':'renderPos'}()" ${page===1?'disabled':''}>‹</button>`;
-  for(let i=1;i<=total;i++){
-    if(i===1||i===total||Math.abs(i-page)<=2)
-      pg+=`<button class="pb ${i===page?'on':''} ${prefix==='p'?'vd':''}" onclick="${prefix==='c'?'cPage':'pPage'}=${i};${prefix==='c'?'renderCampus':'renderPos'}()">${i}</button>`;
-    else if(Math.abs(i-page)===3) pg+=`<span style="padding:0 3px;color:var(--cinza-l)">…</span>`;
-  }
-  pg+=`<button class="pb" onclick="${prefix==='c'?'cPage':'pPage'}=${page+1};${prefix==='c'?'renderCampus':'renderPos'}()" ${page===total?'disabled':''}>›</button>`;
-  pg+=`<span style="margin-left:auto;font-size:11.5px;color:var(--cinza-l)">Pág ${page} de ${total}</span>`;
-  document.getElementById(pagId).innerHTML=pg;
-}
-
-// ═══════════════════════════════════════
-//  FORMULÁRIOS
-// ═══════════════════════════════════════
-function preencheDL(){
-  const vc=[...new Set(DC.map(r=>r.viajante))].sort();
-  document.getElementById('c-dl-via').innerHTML=vc.map(v=>`<option value="${v}">`).join('');
-  const vp=[...new Set(DP.map(r=>r.viajante))].sort();
-  document.getElementById('p-dl-via').innerHTML=vp.map(v=>`<option value="${v}">`).join('');
-}
-
-function salvarC(){
-  const os  = document.getElementById('ci-os').value.trim();
-  const mes  = document.getElementById('ci-mes').value;
-  const via  = document.getElementById('ci-via').value.trim();
-  const val  = parseFloat(document.getElementById('ci-val').value)||0;
-  const sol  = document.getElementById('ci-sol').value;
-  const vinc  = document.getElementById('ci-vinc').value;
-  const atend = document.getElementById('ci-atend').value;
-  const mot  = document.getElementById('ci-mot').value;
-  const sit  = document.getElementById('ci-sit').value;
-  const desc  = document.getElementById('ci-desc').value.trim();
-  const obs  = document.getElementById('ci-obs').value.trim();
-
-  // Campos obrigatórios
-  if(!os||!mes||!via||!val||!sol||!mot||!sit){
-    toast('⚠️ Preencha todos os campos obrigatórios (*)','azul',4000);
-    return;
-  }
-
-  const editIdx = document.getElementById('c-edit-idx').value;
-
-  // Verificar OS duplicada (somente em novo lançamento, não em edição)
-  if(editIdx === '') {
-    const allOS = [...DC, ...DP].map(r => r.os.toString().trim());
-    if(allOS.includes(os)) {
-      toast('❌ OS ' + os + ' já existe! Verifique antes de lançar.', 'azul', 5000);
-      document.getElementById('ci-os').style.borderColor = 'var(--verm)';
-      document.getElementById('ci-os').focus();
-      return;
-    }
-  }
-  document.getElementById('ci-os').style.borderColor = '';
-
-  const _id = editIdx !== '' ? (DC[parseInt(editIdx)]._id || '') : ('id_' + Date.now() + '_' + Math.random().toString(36).substr(2,6));
-  const reg = {os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs,_id};
-  if(editIdx!=='') DC[parseInt(editIdx)]=reg; else DC.unshift(reg);
-  saveC();
-  apiSave('campus', reg).then(r => {
-    if(r && r.ok) showSyncMsg('☁️ Salvo no servidor!');
-  });
-
-  // Aviso de sucesso, limpa campos e fica no formulário para novo lançamento
-  toast('✅ OS ' + os + ' lançada com sucesso! (Campus)', 'azul', 4000);
-  limparC();
-  cFilt = [...DC]; // atualiza filtro com novo registro
-}
-
-function salvarP(){
-  const os  = document.getElementById('pi-os').value.trim();
-  const mes  = document.getElementById('pi-mes').value;
-  const via  = document.getElementById('pi-via').value.trim();
-  const val  = parseFloat(document.getElementById('pi-val').value)||0;
-  const sol  = document.getElementById('pi-sol').value;
-  const vinc  = document.getElementById('pi-vinc').value;
-  const atend = document.getElementById('pi-atend').value;
-  const mot  = document.getElementById('pi-mot').value;
-  const sit  = document.getElementById('pi-sit').value;
-  const desc  = document.getElementById('pi-desc').value.trim();
-  const obs  = document.getElementById('pi-obs').value.trim();
-
-  // Campos obrigatórios
-  if(!os||!mes||!via||!val||!sol||!mot||!sit){
-    toast('⚠️ Preencha todos os campos obrigatórios (*)','verd',4000);
-    return;
-  }
-
-  const editIdx = document.getElementById('p-edit-idx').value;
-
-  // Verificar OS duplicada (somente em novo lançamento)
-  if(editIdx === '') {
-    const allOS = [...DC, ...DP].map(r => r.os.toString().trim());
-    if(allOS.includes(os)) {
-      toast('❌ OS ' + os + ' já existe! Verifique antes de lançar.', 'verd', 5000);
-      document.getElementById('pi-os').style.borderColor = 'var(--verm)';
-      document.getElementById('pi-os').focus();
-      return;
-    }
-  }
-  document.getElementById('pi-os').style.borderColor = '';
-
-  const _id = editIdx !== '' ? (DP[parseInt(editIdx)]._id || '') : ('id_' + Date.now() + '_' + Math.random().toString(36).substr(2,6));
-  const reg = {os,mes,viajante:via,setor_sol:sol,setor_vinc:vinc,setor_atend:atend,descricao:desc,valor:val,motivo:mot,situacao:sit,obs,_id};
-  if(editIdx!=='') DP[parseInt(editIdx)]=reg; else DP.unshift(reg);
-  saveP();
-  apiSave('posgrad', reg).then(r => {
-    if(r && r.ok) showSyncMsg('☁️ Salvo no servidor!');
-  });
-
-  // Aviso de sucesso, limpa campos e fica no formulário para novo lançamento
-  toast('✅ OS ' + os + ' lançada com sucesso! (Pós-Graduação)', 'verd', 4000);
-  limparP();
-  pFilt = [...DP]; // atualiza filtro com novo registro
-}
-
-function limparC(){
-  ['ci-os','ci-via','ci-val','ci-desc','ci-obs'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){el.value='';el.style.borderColor='';}
-  });
-  ['ci-mes','ci-sol','ci-vinc','ci-atend','ci-mot','ci-sit'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  document.getElementById('c-edit-idx').value='';
-  document.getElementById('c-form-ttl').textContent='Novo Lançamento — Campus (PTA 2025)';
-  // Foco no campo OS para agilizar próximo lançamento
-  setTimeout(()=>{ const el=document.getElementById('ci-os'); if(el) el.focus(); }, 100);
-}
-
-function limparP(){
-  ['pi-os','pi-via','pi-val','pi-desc','pi-obs'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){el.value='';el.style.borderColor='';}
-  });
-  ['pi-mes','pi-sol','pi-vinc','pi-atend','pi-mot','pi-sit'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  document.getElementById('p-edit-idx').value='';
-  document.getElementById('p-form-ttl').textContent='Novo Lançamento — Pós-Graduação (PAOE 2211)';
-  // Foco no campo OS para agilizar próximo lançamento
-  setTimeout(()=>{ const el=document.getElementById('pi-os'); if(el) el.focus(); }, 100);
-}
-
-function editar(pref, idx){
-  const r=pref==='c'?DC[idx]:DP[idx];
-  if(pref==='c'){
-    document.getElementById('ci-os').value=r.os;
-    document.getElementById('ci-mes').value=r.mes;
-    document.getElementById('ci-via').value=r.viajante;
-    document.getElementById('ci-val').value=r.valor;
-    document.getElementById('ci-sol').value=r.setor_sol;
-    document.getElementById('ci-vinc').value=r.setor_vinc;
-    document.getElementById('ci-atend').value=r.setor_atend;
-    document.getElementById('ci-mot').value=r.motivo;
-    document.getElementById('ci-sit').value=r.situacao;
-    document.getElementById('ci-desc').value=r.descricao;
-    document.getElementById('ci-obs').value=r.obs||'';
-    document.getElementById('c-edit-idx').value=idx;
-    document.getElementById('c-form-ttl').textContent='Editar — OS '+r.os+' (Campus)';
-    showSec('campus','novo');
-  } else {
-    document.getElementById('pi-os').value=r.os;
-    document.getElementById('pi-mes').value=r.mes;
-    document.getElementById('pi-via').value=r.viajante;
-    document.getElementById('pi-val').value=r.valor;
-    document.getElementById('pi-sol').value=r.setor_sol;
-    document.getElementById('pi-vinc').value=r.setor_vinc;
-    document.getElementById('pi-atend').value=r.setor_atend;
-    document.getElementById('pi-mot').value=r.motivo;
-    document.getElementById('pi-sit').value=r.situacao;
-    document.getElementById('pi-desc').value=r.descricao;
-    document.getElementById('pi-obs').value=r.obs||'';
-    document.getElementById('p-edit-idx').value=idx;
-    document.getElementById('p-form-ttl').textContent='Editar — OS '+r.os+' (Pós-Graduação)';
-    showSec('posgrad','novo');
-  }
-}
-
-function excluir(pref, idx){
-  const arr = pref==='c' ? DC : DP;
-  const reg = arr[idx];
-  if(!confirm(`Excluir OS ${reg.os}?\nEsta ação não pode ser desfeita.`)) return;
-
-  const sheet = pref==='c' ? 'campus' : 'posgrad';
-  arr.splice(idx, 1);
-
-  if(pref==='c'){ saveC(); renderCampus(); } else { saveP(); renderPos(); }
-  toast('🗑️ Removido localmente. Sincronizando...', pref==='c'?'azul':'verd', 2500);
-
-  // Tenta excluir pelo _id; se não tiver, usa o número de OS como chave
-  const _id = reg._id || null;
-  const os  = String(reg.os).trim();
-
-  apiCallDelete(sheet, _id, os).then(r => {
-    if (r && r.ok) {
-      showSyncMsg('☁️ Exclusão sincronizada no servidor!');
-    } else {
-      showSyncMsg('⚠️ Removido localmente. Falha no servidor: ' + (r ? r.error : 'sem resposta'));
-    }
-  });
-}
-
-// Exclusão com fallback: tenta por _id, se falhar tenta por OS
-async function apiCallDelete(sheet, _id, os) {
-  if (!API_OK()) return null;
-  try {
-    // Tenta por _id primeiro
-    if (_id) {
-      const r1 = await apiCall({ action:'delete', sheet, _id });
-      if (r1 && r1.ok) return r1;
-    }
-    // Fallback: exclui pelo número de OS
-    const r2 = await apiCall({ action:'delete_by_os', sheet, os });
-    return r2;
-  } catch(e) {
-    console.warn('apiCallDelete error:', e);
-    return null;
-  }
-}
-
-// ═══════════════════════════════════════
-//  ORÇAMENTO
-// ═══════════════════════════════════════
-// ─── Subtabs do orçamento
-function showOrcSec(sec) {
-  document.getElementById('orc-visao').style.display  = sec==='visao'  ? 'block' : 'none';
-  document.getElementById('orc-editar').style.display = sec==='editar' ? 'block' : 'none';
-  const btns = document.querySelectorAll('#tab-orcamento .stab');
-  btns[0].classList.toggle('on', sec==='visao');
-  btns[1].classList.toggle('on', sec==='editar');
-  if (sec==='editar') renderOrcForms();
-}
-
-// ─── Formulários editáveis
-function renderOrcForms() {
-  ORC = calcExec(loadORC());
-  buildOrcForm('campus',  ORC.campus,  'orc-tbody-campus',  'orc-tfoot-campus');
-  buildOrcForm('posgrad', ORC.posgrad, 'orc-tbody-posgrad', 'orc-tfoot-posgrad');
-}
-
-function buildOrcForm(tipo, obj, tbodyId, tfootId) {
-  const isC   = tipo === 'campus';
-  const cor   = isC ? 'var(--azul)'  : 'var(--verde)';
-  const corBg = isC ? '#f0f5ff'      : '#f0fff8';
-  let html = '', tP = 0, tE = 0;
-  Object.entries(obj).forEach(([k, v]) => {
-    const exec  = v.exec  || 0;
-    const prev  = v.prev  || 0;
-    const saldo = prev - exec;
-    tP += prev; tE += exec;
-    const sid = 'orc-' + tipo + '-' + k.replace(/[^a-z0-9]/gi, '_');
-    html += `<tr style="border-bottom:1px solid var(--borda)">
-      <td style="padding:9px 10px;font-weight:600">${k}</td>
-      <td style="padding:9px 10px;text-align:right">
-        <input type="number" step="0.01" min="0" id="${sid}" value="${prev.toFixed(2)}"
-          onchange="recalcOrcRow(this,'${tipo}','${k}')"
-          style="width:130px;border:1.5px solid var(--borda);border-radius:7px;padding:6px 10px;
-                 font-size:13px;font-family:'IBM Plex Sans',sans-serif;text-align:right;
-                 background:${corBg};outline:none;transition:border-color .2s"
-          onfocus="this.style.borderColor='${cor}'" onblur="this.style.borderColor='var(--borda)'">
-      </td>
-      <td id="${sid}_exec"  style="padding:9px 10px;text-align:right;font-weight:600;color:${cor}">${fmt(exec)}</td>
-      <td id="${sid}_saldo" style="padding:9px 10px;text-align:right;font-weight:700;color:${saldo>=0?'var(--verde)':'var(--verm)'}">
-        ${fmt(Math.abs(saldo))} ${saldo>=0?'▲':'▼'}
-      </td>
-    </tr>`;
-  });
-  document.getElementById(tbodyId).innerHTML = html;
-  const saldoT = tP - tE;
-  document.getElementById(tfootId).innerHTML = `
-    <tr style="border-top:2px solid var(--borda);background:var(--cinza-bg)">
-      <td style="padding:10px;font-weight:700">TOTAL</td>
-      <td id="orc-total-prev-${tipo}" style="padding:10px;text-align:right;font-weight:700">${fmt(tP)}</td>
-      <td style="padding:10px;text-align:right;font-weight:700;color:${cor}">${fmt(tE)}</td>
-      <td style="padding:10px;text-align:right;font-weight:700;color:${saldoT>=0?'var(--verde)':'var(--verm)'}">
-        ${fmt(Math.abs(saldoT))} ${saldoT>=0?'▲':'▼'}
-      </td>
-    </tr>`;
-}
-
-function recalcOrcRow(input, tipo, key) {
-  const newPrev = parseFloat(input.value) || 0;
-  const orc = loadORC();
-  if (!orc[tipo][key]) orc[tipo][key] = {};
-  orc[tipo][key].prev = newPrev;
-  saveORC(orc);
-  ORC = calcExec(orc);
-  const sid   = 'orc-' + tipo + '-' + key.replace(/[^a-z0-9]/gi, '_');
-  const exec  = ORC[tipo][key].exec || 0;
-  const saldo = newPrev - exec;
-  const eEl   = document.getElementById(sid + '_exec');
-  const sEl   = document.getElementById(sid + '_saldo');
-  if (eEl) eEl.textContent = fmt(exec);
-  if (sEl) {
-    sEl.textContent = fmt(Math.abs(saldo)) + ' ' + (saldo>=0?'▲':'▼');
-    sEl.style.color = saldo>=0 ? 'var(--verde)' : 'var(--verm)';
-  }
-  const allPrev = Object.values(ORC[tipo]).reduce((s,v)=>s+(v.prev||0),0);
-  const tEl = document.getElementById('orc-total-prev-'+tipo);
-  if (tEl) tEl.textContent = fmt(allPrev);
-}
-
-function saveOrcForm(tipo) {
-  const orc = loadORC();
-  Object.keys(orc[tipo]).forEach(k => {
-    const sid   = 'orc-' + tipo + '-' + k.replace(/[^a-z0-9]/gi, '_');
-    const input = document.getElementById(sid);
-    if (input) orc[tipo][k].prev = parseFloat(input.value) || 0;
-  });
-  saveORC(orc);
-  ORC = calcExec(orc);
-  toast('✅ Previsão salva com sucesso!', tipo==='campus'?'azul':'verd');
-  renderOrc();
-}
-
-function renderOrc(){
-  ORC = calcExec(loadORC());
-
-  // ── Tabelas resumo
-  function buildOrcTable(obj, id, cor){
-    const items = Object.entries(obj);
-    const tP = items.reduce((s,[,v])=>s+(v.prev||0),0);
-    const tE = items.reduce((s,[,v])=>s+(v.exec||0),0);
-    let html = `<tr><th>Setor</th><th>Previsto</th><th>Executado</th><th>Saldo</th><th>%</th></tr>`;
-    items.forEach(([k,v])=>{
-      const prev=v.prev||0, exec=v.exec||0;
-      const pct=prev>0?Math.min(exec/prev*100,100):0;
-      const over=exec>prev, sld=prev-exec;
-      html+=`<tr>
-        <td><strong>${k}</strong></td>
-        <td>${fmt(prev)}</td>
-        <td>${fmt(exec)}</td>
-        <td class="${sld>=0?'pos':'neg'}">${fmt(Math.abs(sld))} ${sld>=0?'▲':'▼'}</td>
-        <td>
-          <div style="font-size:10.5px;font-weight:700;color:${over?'var(--verm)':'var(--verde)'}">
-            ${Math.round(prev>0?exec/prev*100:0)}%
-          </div>
-          <div class="pm"><div class="pf ${cor} ${over?'over':''}" style="width:${Math.min(pct,100)}%"></div></div>
-        </td>
-      </tr>`;
-    });
-    html+=`<tr>
-      <td>TOTAL</td><td>${fmt(tP)}</td><td>${fmt(tE)}</td>
-      <td class="${(tP-tE)>=0?'pos':'neg'}">${fmt(Math.abs(tP-tE))} ${(tP-tE)>=0?'▲':'▼'}</td>
-      <td><strong>${Math.round(tP>0?tE/tP*100:0)}%</strong></td>
-    </tr>`;
-    document.getElementById(id).innerHTML = html;
-  }
-  buildOrcTable(ORC.campus, 'ot-campus', 'azul');
-  buildOrcTable(ORC.posgrad,'ot-posgrad','verd');
-
-  // ── Evolução mensal
-  function buildMensal(arr, id, cor){
-    const m={};MESES.forEach(mes=>m[mes]=0);
-    arr.filter(r=>!r.situacao.includes('CANC')).forEach(r=>{
-      if(m[r.mes]!==undefined) m[r.mes]+=r.valor;
-    });
-    const isAzul = cor==='azul';
-    document.getElementById(id).innerHTML =
-      '<div class="chart-box" style="height:200px"><canvas id="'+id+'_cv"></canvas></div>';
-    const gradStart = isAzul?'rgba(26,58,92,0.88)':'rgba(26,92,58,0.88)';
-    const gradEnd   = isAzul?'rgba(58,124,191,0.5)':'rgba(76,163,114,0.5)';
-    mkChart(id+'_cv',{
-      type:'bar',
-      data:{ labels:MESES, datasets:[{
-        label:'Valor (R$)', data:MESES.map(mes=>m[mes]),
-        backgroundColor: ctx=>{ const g=ctx.chart.ctx.createLinearGradient(0,0,0,200);
-          g.addColorStop(0,gradStart);g.addColorStop(1,gradEnd);return g; },
-        borderColor: isAzul?'#3a7cbf':'#4ca372',
-        borderWidth:1.5, borderRadius:6, borderSkipped:false,
-      }]},
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        layout:{ padding:{top:30,right:10} },
-        animation:{ duration:900, easing:'easeOutQuart' },
-        plugins:{
-          legend:{display:false},
-          tooltip:{ backgroundColor:'rgba(26,26,40,0.9)', padding:9, cornerRadius:8,
-            callbacks:{ label: ctx=>' '+fmt(ctx.raw) } },
-          datalabels:{
-            anchor:'end', align:'top', offset:3,
-            formatter: v => v>0 ? 'R$'+(v/1000).toFixed(0)+'k' : '',
-            font:{size:9, weight:'700'},
-            color: isAzul?'#1a3a5c':'#1a5c3a',
-          }
-        },
-        scales:{
-          x:{ grid:{display:false}, ticks:{font:{size:10}} },
-          y:{ grid:{color:'rgba(208,217,232,0.4)'}, ticks:{font:{size:10},
-            callback:v=>v>=1000?'R$'+(v/1000).toFixed(0)+'k':'R$'+v } }
-        }
-      }
-    });
-  }
-  buildMensal(DC,'ot-mes-c','azul');
-  buildMensal(DP,'ot-mes-p','verde');
-
-  // ── Previsto vs Executado — labels acima das barras
-  function buildOrcChart(obj, id, corA, corB, labelColor){
-    const entries = Object.entries(obj);
-    const maxVal  = Math.max(...entries.map(([,v])=>Math.max(v.prev||0,v.exec||0)), 1);
-    mkChart(id,{
-      type:'bar',
-      data:{
-        labels: entries.map(([k])=>k),
-        datasets:[
-          {
-            label:'Previsto',
-            data: entries.map(([,v])=>v.prev||0),
-            backgroundColor:'rgba(139,152,180,0.35)',
-            borderColor:'rgba(139,152,180,0.8)',
-            borderWidth:1.5, borderRadius:5, borderSkipped:false,
-          },
-          {
-            label:'Executado',
-            data: entries.map(([,v])=>v.exec||0),
-            backgroundColor: ctx=>{ const g=ctx.chart.ctx.createLinearGradient(0,0,0,260);
-              g.addColorStop(0,corA);g.addColorStop(1,corB);return g; },
-            borderColor: corA, borderWidth:1.5, borderRadius:5, borderSkipped:false,
-          }
-        ]
-      },
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        layout:{ padding:{top:34,right:10} },
-        animation:{ duration:900, easing:'easeOutQuart', delay:ctx=>ctx.dataIndex*40 },
-        plugins:{
-          legend:{ position:'bottom', labels:{boxWidth:10, padding:12, font:{size:11}} },
-          tooltip:{ backgroundColor:'rgba(26,26,40,0.9)', padding:10, cornerRadius:8,
-            callbacks:{ label: ctx=>' '+ctx.dataset.label+': '+fmt(ctx.raw) } },
-          datalabels:{
-            anchor:'end', align:'top', offset:3,
-            display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
-            formatter: v => v>0 ? 'R$'+(v/1000).toFixed(0)+'k' : '',
-            font:{size:9, weight:'700'},
-            color: ctx => ctx.datasetIndex===0 ? '#6b7a99' : labelColor,
-          }
-        },
-        scales:{
-          x:{ grid:{display:false}, ticks:{font:{size:10}} },
-          y:{
-            suggestedMax: maxVal * 1.28,
-            grid:{color:'rgba(208,217,232,0.4)'},
-            ticks:{font:{size:10}, callback:v=>'R$'+(v/1000).toFixed(0)+'k'}
-          }
-        }
-      }
-    });
-  }
-  buildOrcChart(ORC.campus,  'ch-orc-camp','rgba(26,58,92,0.85)','rgba(58,124,191,0.4)','#1a3a5c');
-  buildOrcChart(ORC.posgrad, 'ch-orc-pos', 'rgba(26,92,58,0.85)','rgba(76,163,114,0.4)','#1a5c3a');
-}
-// ═══════════════════════════════════════
-//  TOAST — Notificação visual
+//  TOAST
 // ═══════════════════════════════════════
 function toast(msg, cor, dur=3500) {
   const t = document.getElementById('toast');
@@ -1875,266 +927,66 @@ function toast(msg, cor, dur=3500) {
 }
 
 // ═══════════════════════════════════════
-//  IMPRESSÃO
+//  MODAL DE CONFIGURAÇÕES
 // ═══════════════════════════════════════
-function printFiltro(pref) {
-  const isCampus = pref === 'c';
-  const filtrado  = isCampus ? cFilt : pFilt;
-  const titulo    = isCampus
-    ? 'UNEMAT Cáceres — Diárias Campus (PTA)'
-    : 'UNEMAT Cáceres — Diárias Pós-Graduação';
-
-  // Lê os filtros ativos para exibir no cabeçalho
-  const filtros = [];
-  if (isCampus) {
-    const mes  = document.getElementById('cf-mes').value;
-    const set  = document.getElementById('cf-set').value;
-    const sit  = document.getElementById('cf-sit').value;
-    const mot  = document.getElementById('cf-mot').value;
-    const bus  = document.getElementById('cf-bus').value;
-    if (mes) filtros.push('Mês: ' + mes);
-    if (set) filtros.push('Setor: ' + set);
-    if (sit) filtros.push('Situação: ' + sit);
-    if (mot) filtros.push('Motivo: ' + mot.replace(/  /g,' '));
-    if (bus) filtros.push('Busca: "' + bus + '"');
-  } else {
-    const mes  = document.getElementById('pf-mes').value;
-    const set  = document.getElementById('pf-set').value;
-    const sit  = document.getElementById('pf-sit').value;
-    const mot  = document.getElementById('pf-mot').value;
-    const bus  = document.getElementById('pf-bus').value;
-    if (mes) filtros.push('Mês: ' + mes);
-    if (set) filtros.push('Programa: ' + set);
-    if (sit) filtros.push('Situação: ' + sit);
-    if (mot) filtros.push('Motivo: ' + mot.replace(/  /g,' '));
-    if (bus) filtros.push('Busca: "' + bus + '"');
-  }
-
-  const totalValor = filtrado
-    .filter(r => !r.situacao.includes('CANC'))
-    .reduce((s,r) => s + r.valor, 0);
-
-  const agora = new Date().toLocaleDateString('pt-BR', {
-    day:'2-digit', month:'2-digit', year:'numeric',
-    hour:'2-digit', minute:'2-digit'
-  });
-
-  // Monta linhas da tabela
-  const linhas = filtrado.map((r,i) => {
-    const sitCor = r.situacao.includes('EXEC') ? '#1a5c3a'
-                 : r.situacao.includes('CANC') ? '#b03a2e'
-                 : '#c08b2a';
-    const bgRow  = i % 2 === 0 ? '#ffffff' : '#f7f9fc';
-    return `<tr style="background:${bgRow}">
-      <td>${r.os}</td>
-      <td>${r.mes}</td>
-      <td>${r.viajante}</td>
-      <td>${r.setor_sol}</td>
-      <td>${r.setor_atend}</td>
-      <td style="max-width:220px;word-wrap:break-word;font-size:10px">${r.descricao}</td>
-      <td>${(r.motivo||'').replace(/  /g,' ')}</td>
-      <td style="text-align:right;font-weight:600;color:#1a3a5c">${fmt(r.valor)}</td>
-      <td style="color:${sitCor};font-weight:700">${r.situacao.replace(/  /g,' ')}</td>
-    </tr>`;
-  }).join('');
-
-  const html = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>${titulo}</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; font-size: 11px; color: #1a1a2e; padding: 16px; }
-  .header { margin-bottom: 14px; }
-  .header h1 { font-size: 15px; color: #1a3a5c; margin-bottom: 4px; }
-  .header .sub { font-size: 10px; color: #666; }
-  .filtros { background: #f0f5ff; border: 1px solid #d0d9e8; border-radius: 6px;
-             padding: 7px 12px; margin-bottom: 10px; font-size: 10.5px; color: #1a3a5c; }
-  .filtros strong { margin-right: 4px; }
-  .resumo { display: flex; gap: 24px; margin-bottom: 12px; }
-  .resumo-item { background: #f7f9fc; border: 1px solid #d0d9e8; border-radius: 6px;
-                 padding: 7px 14px; }
-  .resumo-item .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: #666; }
-  .resumo-item .val { font-size: 14px; font-weight: 700; color: #1a3a5c; }
-  table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
-  thead th { background: #1a3a5c; color: white; padding: 7px 8px; text-align: left;
-             font-size: 9.5px; text-transform: uppercase; letter-spacing: .4px; }
-  tbody td { padding: 6px 8px; border-bottom: 1px solid #e8ecf0; vertical-align: top; }
-  tfoot td { padding: 8px; background: #1a3a5c; color: white; font-weight: 700;
-             font-size: 11px; }
-  .footer { margin-top: 14px; font-size: 9px; color: #999; text-align: right; }
-  @media print {
-    body { padding: 8px; }
-    @page { margin: 1.2cm; size: A4 landscape; }
-  }
-</style>
-</head>
-<body>
-  <div class="header">
-    <h1>${titulo}</h1>
-    <div class="sub">UNEMAT — Campus de Cáceres · DURA/DPPF · Emitido em ${agora}</div>
-  </div>
-
-  ${filtros.length > 0 ? `<div class="filtros"><strong>Filtros aplicados:</strong>${filtros.join(' &nbsp;|&nbsp; ')}</div>` : ''}
-
-  <div class="resumo">
-    <div class="resumo-item">
-      <div class="lbl">Total de registros</div>
-      <div class="val">${filtrado.length}</div>
-    </div>
-    <div class="resumo-item">
-      <div class="lbl">Valor executado (excl. cancelados)</div>
-      <div class="val">${fmt(totalValor)}</div>
-    </div>
-    <div class="resumo-item">
-      <div class="lbl">Cancelados</div>
-      <div class="val">${filtrado.filter(r=>r.situacao.includes('CANC')).length}</div>
-    </div>
-  </div>
-
-  <table>
-    <thead>
-      <tr>
-        <th>OS</th><th>Mês</th><th>Viajante</th><th>Setor Sol.</th><th>Setor Atend.</th>
-        <th>Descrição</th><th>Motivo</th><th style="text-align:right">Valor</th><th>Situação</th>
-      </tr>
-    </thead>
-    <tbody>${linhas}</tbody>
-    <tfoot>
-      <tr>
-        <td colspan="7">TOTAL (${filtrado.length} registros)</td>
-        <td style="text-align:right">${fmt(totalValor)}</td>
-        <td></td>
-      </tr>
-    </tfoot>
-  </table>
-
-  <div class="footer">Sistema de Diárias UNEMAT Cáceres · ${agora}</div>
-</body>
-</html>`;
-
-  const janela = window.open('', '_blank', 'width=1100,height=750');
-  janela.document.write(html);
-  janela.document.close();
-  janela.focus();
-  setTimeout(() => janela.print(), 400);
+function openConfig() {
+  const cfg = getSB();
+  document.getElementById('cfg-url').value = cfg.url || '';
+  document.getElementById('cfg-key').value = cfg.key || '';
+  document.getElementById('cfg-status').textContent = '';
+  document.getElementById('cfg-modal').style.display   = 'block';
+  document.getElementById('cfg-overlay').style.display = 'block';
 }
-
-// ═══════════════════════════════════════
-//  CONFIGURAÇÕES
-// ═══════════════════════════════════════
-function openConfig(){
-  const modal = document.getElementById('cfg-modal');
-  const overlay = document.getElementById('cfg-overlay');
-  const urlInput = document.getElementById('cfg-url');
-  urlInput.value = localStorage.getItem('diarias_api_url') || API_URL_SAVED || '';
-  modal.style.display = 'block';
-  overlay.style.display = 'block';
-}
-function closeConfig(){
-  document.getElementById('cfg-modal').style.display = 'none';
+function closeConfig() {
+  document.getElementById('cfg-modal').style.display   = 'none';
   document.getElementById('cfg-overlay').style.display = 'none';
 }
-function cfgSaveUrl(){
+async function cfgSaveUrl() {
   const url = document.getElementById('cfg-url').value.trim();
-  if (!url || !url.startsWith('https://script.google.com')) {
-    document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verm)">⚠️ URL inválida. Deve começar com https://script.google.com</span>';
-    return;
+  const key = document.getElementById('cfg-key').value.trim();
+  if (!url || !url.includes('supabase')) {
+    document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verm)">⚠️ URL inválida. Deve conter "supabase.co"</span>'; return;
   }
-  localStorage.setItem('diarias_api_url', url);
-  // Override API_URL at runtime
-  window._API_URL_OVERRIDE = url;
+  if (!key || key.length < 20) {
+    document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verm)">⚠️ Chave API inválida</span>'; return;
+  }
+  saveSB({ url, key });
   document.getElementById('cfg-status').textContent = '⏳ Testando conexão...';
-  fetch(url + '?action=get&sheet=campus&t=' + Date.now())
-    .then(r => {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .then(j => {
-      const n = Array.isArray(j.data) ? j.data.length : '?';
-      document.getElementById('cfg-status').innerHTML =
-        '<span style="color:var(--verde)">✅ Conexão OK! ' + n + ' registros no servidor.</span>';
-    })
-    .catch(err => {
-      document.getElementById('cfg-status').innerHTML =
-        '<span style="color:var(--verm)">❌ Erro: ' + err.message + '. Verifique a URL e se o Apps Script está publicado como "Qualquer pessoa".</span>';
-    });
+  const r = await sbFetch('campus', 'GET', null, { select:'count', limit:1 });
+  document.getElementById('cfg-status').innerHTML = r !== null
+    ? '<span style="color:var(--verde)">✅ Conexão OK! Configuração salva.</span>'
+    : '<span style="color:var(--verm)">❌ Falha na conexão. Verifique a URL e a chave.</span>';
 }
-async function cfgSyncNow(){
-  document.getElementById('cfg-status').textContent = '⏳ Buscando dados do servidor...';
-  try {
-    const [dc, dp] = await Promise.all([apiGet('campus'), apiGet('posgrad')]);
-    let n = 0;
-    if (dc && dc.length > 0) { DC = dc.map(r=>({...r,valor:parseFloat(r.valor)||0})); saveC(); n+=dc.length; }
-    if (dp && dp.length > 0) { DP = dp.map(r=>({...r,valor:parseFloat(r.valor)||0})); saveP(); n+=dp.length; }
-    ORC = calcExec(loadORC());
-    preencheDL();
-    cFilt=[...DC]; pFilt=[...DP];
-    renderDash();
-    document.getElementById('cfg-status').innerHTML =
-      '<span style="color:var(--verde)">✅ Sincronizado! '+n+' registros carregados.</span>';
-    toast('✅ Dados sincronizados com o servidor!','azul',4000);
-  } catch(e) {
-    document.getElementById('cfg-status').innerHTML =
-      '<span style="color:var(--verm)">❌ Erro ao conectar. Verifique a URL.</span>';
-  }
+async function cfgSyncNow() {
+  document.getElementById('cfg-status').textContent = '⏳ Buscando dados...';
+  const ok = await syncFromServer(false);
+  document.getElementById('cfg-status').innerHTML = ok
+    ? '<span style="color:var(--verde)">✅ ' + (DC.length+DP.length) + ' registros carregados!</span>'
+    : '<span style="color:var(--verm)">❌ Erro. Verifique a configuração.</span>';
 }
-async function cfgUploadAll(){
-  if (!confirm('Isso vai SUBSTITUIR todos os dados no servidor pelos dados locais.\n\nConfirma a carga inicial?')) return;
+async function cfgUploadAll() {
+  if (!confirm('Isso vai ENVIAR todos os dados locais para o Supabase.\nRegistros com mesma OS serão atualizados.\n\nConfirma?')) return;
   document.getElementById('cfg-status').textContent = '⏳ Enviando Campus...';
-  const r1 = await apiBulk('campus',  DC);
+  const r1 = await apiBulk('campus', DC);
   document.getElementById('cfg-status').textContent = '⏳ Enviando Pós-Graduação...';
   const r2 = await apiBulk('posgrad', DP);
-  if (r1 && r2) {
-    document.getElementById('cfg-status').innerHTML = `<span style="color:var(--verde)">✅ Carga completa! Campus: ${r1.count} registros, Pós: ${r2.count} registros</span>`;
+  if (r1 && r1.ok && r2 && r2.ok) {
+    document.getElementById('cfg-status').innerHTML =
+      '<span style="color:var(--verde)">✅ Carga completa! Campus: ' + r1.count + ', Pós: ' + r2.count + '</span>';
+    toast('✅ Dados enviados ao Supabase!', 'azul', 4000);
   } else {
-    document.getElementById('cfg-status').innerHTML = '<span style="color:var(--verm)">❌ Erro na carga. Verifique a URL do Apps Script.</span>';
+    document.getElementById('cfg-status').innerHTML =
+      '<span style="color:var(--verm)">❌ Erro na carga. Verifique a configuração.</span>';
   }
 }
-
-// Recupera URL salva no localStorage
-let API_URL_SAVED = localStorage.getItem('diarias_api_url') || '';
-
-// Override de API_URL com valor salvo
-Object.defineProperty(window, '_getApiUrl', { value: () => API_URL_SAVED || API_URL });
 
 // ═══════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════
-ORC = calcExec(loadORC()); // DC e DP já estão definidos aqui
+ORC = calcExec(loadORC());
 preencheDL();
 renderDash();
-
-// ── Sincronização automática ao abrir
-// Se a URL do servidor estiver configurada, busca os dados mais recentes
-(async () => {
-  if (API_OK()) {
-    showSyncMsg('⏳ Sincronizando dados...');
-    try {
-      const [dc, dp] = await Promise.all([apiGet('campus'), apiGet('posgrad')]);
-      let updated = false;
-      if (dc && dc.length > 0) {
-        DC = dc.map(r => ({...r, valor: parseFloat(r.valor)||0}));
-        saveC(); updated = true;
-      }
-      if (dp && dp.length > 0) {
-        DP = dp.map(r => ({...r, valor: parseFloat(r.valor)||0}));
-        saveP(); updated = true;
-      }
-      if (updated) {
-        ORC = calcExec(loadORC());
-        preencheDL();
-        renderDash();
-        showSyncMsg('✅ Dados atualizados do servidor!');
-      } else {
-        showSyncMsg('✅ Conectado — dados em dia!');
-      }
-    } catch(e) {
-      showSyncMsg('⚠️ Usando dados locais (sem conexão)');
-    }
-  }
-})();
+syncFromServer(true); // auto-sync sempre (credenciais embutidas)
 </script>
 </body>
 </html>

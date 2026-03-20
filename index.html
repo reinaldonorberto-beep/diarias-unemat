@@ -269,6 +269,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
     <button class="nb"     onclick="showMain('posgrad')">🎓 Pós-Graduação</button>
     <button class="nb"     onclick="showMain('orcamento')">💰 Orçamento</button>
     <button class="nb" onclick="openConfig()" title="Configurações e sincronização">⚙️</button>
+    <button class="nb" onclick="openExport()" title="Exportar / Backup dos dados">💾</button>
   </div>
 </div>
 
@@ -707,6 +708,61 @@ body{font-family:'IBM Plex Sans',sans-serif;background:var(--cinza-bg);color:var
     <strong>Carga Inicial:</strong> use apenas uma vez para enviar dados existentes ao Supabase.
   </div>
 </div>
+<!-- ══ MODAL EXPORTAÇÃO ══ -->
+<div id="export-overlay" onclick="closeExport()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:800"></div>
+<div id="export-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:801;background:#fff;border-radius:16px;padding:28px 32px;width:480px;max-width:95vw;box-shadow:0 16px 48px rgba(0,0,0,.25)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--azul)">💾 Exportar / Backup</div>
+    <button onclick="closeExport()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--cinza-m)">✕</button>
+  </div>
+
+  <div style="background:var(--azul-p);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:12.5px;color:var(--azul-m);line-height:1.6">
+    📦 Faça o backup dos dados localmente. Recomendado fazer semanalmente ou antes de grandes lançamentos.
+  </div>
+
+  <!-- JSON completo -->
+  <div style="margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;color:var(--cinza-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Backup Completo (JSON)</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--cinza-bg);border-radius:9px;padding:10px 14px">
+      <div>
+        <div style="font-size:13px;font-weight:600">Campus + Pós-Graduação</div>
+        <div style="font-size:11px;color:var(--cinza-l)" id="exp-count-t">– registros</div>
+      </div>
+      <button onclick="exportJSON()" class="btn bp" style="padding:6px 16px;font-size:12px">⬇️ Baixar JSON</button>
+    </div>
+  </div>
+
+  <!-- CSV separados -->
+  <div style="font-size:11px;font-weight:700;color:var(--cinza-m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Exportar CSV (abre no Excel)</div>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--cinza-bg);border-radius:9px;padding:10px 14px">
+      <div>
+        <div style="font-size:13px;font-weight:600">Campus (PTA)</div>
+        <div style="font-size:11px;color:var(--cinza-l)" id="exp-count-c">– registros</div>
+      </div>
+      <button onclick="exportCSV('campus')" class="btn bo" style="padding:6px 16px;font-size:12px;border-color:var(--azul);color:var(--azul)">⬇️ CSV Campus</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--cinza-bg);border-radius:9px;padding:10px 14px">
+      <div>
+        <div style="font-size:13px;font-weight:600">Pós-Graduação (PAOE)</div>
+        <div style="font-size:11px;color:var(--cinza-l)" id="exp-count-p">– registros</div>
+      </div>
+      <button onclick="exportCSV('posgrad')" class="btn bo" style="padding:6px 16px;font-size:12px;border-color:var(--verde);color:var(--verde)">⬇️ CSV Pós-Grad</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--cinza-bg);border-radius:9px;padding:10px 14px">
+      <div>
+        <div style="font-size:13px;font-weight:600">Completo (Campus + Pós)</div>
+        <div style="font-size:11px;color:var(--cinza-l)" id="exp-count-t2"></div>
+      </div>
+      <button onclick="exportCSV('todos')" class="btn bo" style="padding:6px 16px;font-size:12px">⬇️ CSV Completo</button>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--borda);font-size:11px;color:var(--cinza-l);line-height:1.6">
+    <strong>JSON:</strong> formato completo para restaurar dados. <strong>CSV:</strong> abre direto no Excel para análise.
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2144,6 +2200,65 @@ function printFiltro(pref) {
   janela.document.close();
   janela.focus();
   setTimeout(() => janela.print(), 400);
+}
+
+
+// ═══════════════════════════════════════
+//  EXPORTAÇÃO / BACKUP
+// ═══════════════════════════════════════
+function exportJSON() {
+  const agora = new Date().toISOString().slice(0,10);
+  const backup = {
+    gerado_em: new Date().toISOString(),
+    campus:  DC,
+    posgrad: DP,
+    total: DC.length + DP.length
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'backup_diarias_' + agora + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✅ Backup JSON baixado!', 'azul', 3000);
+}
+
+function exportCSV(tipo) {
+  const agora = new Date().toISOString().slice(0,10);
+  const dados = tipo === 'campus' ? DC : tipo === 'posgrad' ? DP : [...DC, ...DP];
+  const label = tipo === 'campus' ? 'campus' : tipo === 'posgrad' ? 'posgrad' : 'completo';
+  const cols = ['os','mes','viajante','setor_sol','setor_vinc','setor_atend','descricao','valor','motivo','situacao','obs'];
+  const header = cols.join(';');
+  const rows = dados.map(r =>
+    cols.map(c => {
+      const v = String(r[c] ?? '').replace(/"/g,'""').replace(/
+/g,' ');
+      return v.includes(';') || v.includes('"') ? '"'+v+'"' : v;
+    }).join(';')
+  );
+  const csv = '﻿' + header + '
+' + rows.join('
+'); // BOM para Excel BR
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'diarias_' + label + '_' + agora + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✅ CSV ' + label + ' baixado!', 'azul', 3000);
+}
+
+function openExport() {
+  document.getElementById('export-modal').style.display   = 'block';
+  document.getElementById('export-overlay').style.display = 'block';
+  // Atualiza contadores
+  document.getElementById('exp-count-c').textContent = DC.length + ' registros';
+  document.getElementById('exp-count-p').textContent = DP.length + ' registros';
+  document.getElementById('exp-count-t').textContent = (DC.length + DP.length) + ' registros';
+}
+function closeExport() {
+  document.getElementById('export-modal').style.display   = 'none';
+  document.getElementById('export-overlay').style.display = 'none';
 }
 
 // ═══════════════════════════════════════
